@@ -42,6 +42,7 @@ together) and [REPOSITORY_MAP.md](./REPOSITORY_MAP.md) (where everything lives).
 - [architecture/AGENT_SESSIONS.md](./architecture/AGENT_SESSIONS.md) — Agent Session Manager
 - [architecture/AGENT_ORCHESTRATOR.md](./architecture/AGENT_ORCHESTRATOR.md) — unified AI CLI orchestrator
 - [architecture/AGENT_CATALOG.md](./architecture/AGENT_CATALOG.md) — implemented analysis agents
+- [architecture/TOKEN_EFFICIENT_MODEL_STRATEGY.md](./architecture/TOKEN_EFFICIENT_MODEL_STRATEGY.md) — **[PLANNED]** context compiler, validation controller, and capability-aware model lanes
 
 ## Guides
 

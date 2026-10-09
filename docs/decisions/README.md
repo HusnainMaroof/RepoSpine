@@ -49,6 +49,7 @@ ADR-002.md       ...
 | [ADR-023](./ADR-023-remove-browser-and-benchmark-subsystems.md) | Remove browser control (Playwright) and the benchmark harness from this repository; install CodeAtlas only and let `atlas setup` install just what the user selects | Accepted | 2026-09-16 |
 | [ADR-024](./ADR-024-multilang-tree-sitter-and-module-resolvers.md) | Multi-language parsing via tree-sitter WASM behind `LanguageParser` (Python/Go/Java/C#/Rust); additive symbol kinds; cross-file resolution as an injected `ModuleResolver` contract in `core` | Accepted | 2026-10-05 |
 | [ADR-025](./ADR-025-task-ledger-handoff.md) | Mid-task provider handoff via a durable task ledger (`.codeatlas/tasks/`); sessions stay provider-immutable; CLI + MCP surfaces | Accepted | 2026-10-08 |
+| [ADR-026](./ADR-026-token-efficient-model-strategy.md) | Planned provider-neutral context compiler and verification controller: task-aware retrieval, bounded work packets, explainable model lanes, validation-led escalation, and evaluation gates | Proposed | 2026-10-08 |
 
 ### Superseded / removed
 

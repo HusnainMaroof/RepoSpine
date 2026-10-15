@@ -33,6 +33,8 @@ Verified against code and ADRs:
 - **Tiered budgets and per-item truncation** — `packages/sdk/src/context-integration/budget.ts`.
 - **Context modes** — `digest` mode, auto-selected above 800 files and selectable per call (ADR-016).
 - **Hierarchy** — `hierarchy.ts` (ADR-014).
+- **Bounded graph traversal** — `assemble.ts`: 2 hops, per-hop and total caps, path attribution (added in round 4 review; see §10.2).
+- **Ranged items and per-item explanations** — `ranges` and `toContextExplanation` in `render.ts`.
 - **Planner / classifier / critic / sufficiency / synthesis** — all in `packages/sdk/src/context-integration/`.
 - **Stable scaffold + dynamic suffix split**, bounded-executor stance for smaller models, deterministic verification before escalation (ADR-026).
 - **Deny-filter and secrets exclusion** — rendered in the package footer.
@@ -207,9 +209,111 @@ Focus: what developers actually write for coding agents, and how tools load it.
 
 ---
 
-## 10. Sources
+## 10. Round 4: what makes context useful, not just present
 
-- Chroma, *Context Rot* — https://www.trychroma.com/research/context-rot
+Focus: how agents actually find and use code, and which package contents
+change outcomes. Two primary sources, both measured on code tasks.
+
+### 10.1 Recall is over-favored; retrieved code is not always used (ContextBench, arXiv 2602.05892)
+- 1,136 issue tasks, 66 repositories, 8 languages, with human-annotated "gold contexts" at file, block, and line level. Four frontier LLMs and five agents were scored on what they *read* against those gold contexts.
+- **Simple scaffolding matched complex scaffolding.** More elaborate retrieval pipelines did not reliably beat a simple baseline on context retrieval.
+- **Models favor recall over precision.** Every model tested retrieved broadly, which added noise and capped precision and F1.
+- **Balanced retrieval was cheaper and better.** Models that balanced how often they retrieved against how fine-grained the context was got higher Pass@1 at lower cost. Aggressive retrieval mostly added tokens.
+- **Consolidation gap.** Agents often *inspected* the gold-relevant code but did not keep or use it when generating the patch. The authors name this the main bottleneck.
+- **Fit for CodeAtlas:**
+  - Package evidence at the **symbol or line-range** level where possible, not whole files (`ranges` already exists in `render.ts`).
+  - Put a short "why this is here" line next to each item, so the model is more likely to use it. This targets the consolidation gap. `toContextExplanation` (`render.ts`) already builds per-item reasons and can be reused for this.
+  - The §5 eval corpus can score recall and precision against gold file/symbol sets, the way ContextBench does. CodeAtlas does not need the whole benchmark.
+- **Caveat:** The benchmark is for issue resolution on public repos. The gold contexts were annotated by people, so they are high-quality but not large. Our results will depend on our own gold sets.
+
+### 10.2 Structural neighbors surface hidden dependencies (Navigation Paradox, arXiv 2602.20048)
+- Tested on a 30-task benchmark over one Python repo (FastAPI RealWorld), with 3 runs per condition. Tasks were split by how discoverable the needed files are: semantic (G1), structural (G2), and hidden (G3, no lexical overlap with the task).
+- **Hidden-dependency tasks:** a 1-hop import/inherit/instantiate neighborhood of the primary file reached 99.4% architectural coverage, vs. 76.2% for the vanilla agent and 78.2% for BM25 file ranking. BM25 gave no gain on G3.
+- **Semantic tasks:** BM25 was best (100% vs. 90% vanilla). Structure did not help there. Use keyword retrieval for keyword-findable tasks, and graph neighbors for the rest.
+- **Adoption problem:** When the graph tool was not called, the agent scored no better than vanilla. The agent used the tool in only 42% of the trials that had it available, and 0 of 30 G2 trials used it. Adding a checklist at the *end* of the prompt raised adoption to 100% on G3 (a *Lost in the Middle* effect, which §1 already covers).
+- **Fit for CodeAtlas, without MCP:** CodeAtlas already does this in `assemble.ts`. It runs bounded graph traversal by default: 2 hops, per-hop caps of 10 and 8, a total cap of 12, score decay of 0.7 per hop, and path attribution (`seed → … → file`). Traversal is inline package content, so no tool call is needed. The gap is measurement, not implementation: nothing shows that the G3 gain holds on CodeAtlas's own tasks, and the paper tested 1-hop, not 2-hop, expansion.
+- **Caveat:** One repo, 30 tasks, a single Python framework, and an automated AST graph with no human review. The authors call the result a lower bound, and their graph was built with Python's `ast` module, not CodeAtlas's parser. Treat the effect size as a hypothesis for TypeScript repos. The G1–G3 split is a useful taxonomy for the eval corpus.
+
+### 10.3 Proposed additions from round 4 (revised after code check)
+- **P14 — Measure existing graph traversal against the G1–G3 split (replaces the earlier "add neighbors" idea).** Traversal already exists (§10.2). Build G1/G2/G3 tasks on the eval corpus (§5) and measure coverage and precision with traversal on and off. Only tune the caps if the numbers say so. ContextBench's noise finding suggests the 2-hop default may cost precision.
+- **P15 — Reason per evidence item.** Each included item carries a one-line reason. `toContextExplanation` and `renderContextExplanation` (`render.ts`) already build per-item reasons for `atlas context explain`. The gap is that the rendered package does not show them, so this is a rendering change. It targets the consolidation gap in §10.1 and must not add a new scoring path.
+- **P16 — Line-range evidence over whole files.** `ranges` already exists on items and renders as `lines: …` in `render.ts`. The open question is how often the planner uses ranges instead of whole files. Measure that, then report the recall/precision trade-off on the eval corpus. This follows the balanced-retrieval result.
+- **P1 supported:** the ContextBench and Navigation Paradox results both point to the end of the prompt. Keep the checklist and output contract there.
+
+### 10.4 Not adopted from round 4
+- **Deeper multi-hop graph traversal.** The paper's gains come from 1-hop neighborhoods. Multi-hop expansion risks the noise that ContextBench penalizes. Start with 1-hop.
+- **Agent-side graph tools.** This would need MCP or a tool loop. The adoption result (42%) argues against depending on the agent to call them.
+- **Vendor-specific retrieval stacks.** The agent-search comparison sources I found in this round (blog posts on grep vs. vector search) were not primary research, so I did not use them.
+
+---
+
+## 11. Round 5: shape tool output for the model (agent-computer interface)
+
+### 11.1 Output shape matters as much as retrieval (SWE-agent, arXiv 2405.15793)
+- The paper's claim is that the interface itself changes agent results. SWE-agent's docs list three choices that were tuned in its study:
+  - **Windowed reads.** A file viewer shows at most 100 lines per turn. The authors say this works best. Plain `cat` was worse.
+  - **Succinct search.** Directory search lists each matching file once, not each match with context. The authors say showing more context per match "proved to be too confusing for the model."
+  - **Guardrail on result count.** Searches return at most 50 matches. A broader result returns an error that asks for a narrower query.
+- Edits pass a syntax check before they apply. Empty command output returns an explicit "ran successfully" message.
+- **Source quality:** the arXiv HTML was too large to fetch in full. The 100-line and 50-match figures come from search snippets of the paper and from the SWE-agent docs page (`swe-agent.com/latest/background/aci/`), which I read. I did not read the paper's ablation tables.
+
+### 11.2 Hierarchical localization narrows before it edits (Agentless, arXiv 2407.01489)
+- Agentless localizes in three steps: file, then class or function, then edit location. It uses an LLM and an embedding-based retrieval step, then a single repair pass. It does not let the model choose its next action.
+- A search snippet of the paper (alphaXiv, secondary) reports 69.7% file-level and 52.0% function-level localization accuracy. I did not verify these numbers in the paper body. Treat them as unconfirmed.
+
+### 11.3 What CodeAtlas already does
+- `search_files` and the symbol search cap results (default 20, max 100), and return structured hits, not match snippets. This matches the succinct-search finding.
+- `read_range` returns at most 20,000 characters and says so. It cuts by character count, so a cut can land mid-line. The note asks the agent to narrow the range.
+
+### 11.4 Proposed additions from round 5
+- **P17 — Cut `read_range` on line boundaries, not characters.** Stop at the last full line under the cap, and state the last line returned. This matches the windowed-reads finding and avoids a half-line that the model can misread. It is a small change in `handlers.ts` (around the 20K cap) with a regression test. It can ship without the eval corpus, since it is a correctness fix, not a ranking change.
+- **P18 — Keep search hits as one row per file or symbol.** This is already the case, so no change. Add a test that asserts it, so a later change doesn't add per-match snippets.
+- **P19 — Empty results get an explicit message: dropped.** I checked `renderContextPackage` in `render.ts`. It has no empty-items message, but its `# Budget` line already prints `0/N items`, so an agent can see that nothing was selected. The gap is small. I would only add a line if an eval run shows agents misreading an empty package.
+
+### 11.5 Not adopted from round 5
+- **Lint-before-apply edits.** CodeAtlas is read-only and has no edit tool. This doesn't apply here. It is a reason to keep editing out of the context SDK.
+- **Agentless's fixed three-phase pipeline as a replacement for the planner.** CodeAtlas's planner already does bounded selection, and ADR-026 says smaller models should be bounded executors. Agentless is a benchmark result on Python SWE-bench Lite, not a TypeScript workload. Do not rebuild the planner from it.
+
+---
+
+## 12. Round 6: how to measure whether context helps
+
+Rounds 1–5 proposed changes that only an eval can judge (§5). Two primary sources show how to build that eval so it can detect a real effect.
+
+### 12.1 Context files had no measurable effect on correctness (Khatri, arXiv 2607.27250)
+
+A paired ablation of three injection strategies (none, always-on, selective) on 17 real PR tasks across Claude Code and Codex, with 3 repeats each and hidden gold tests. Correctness did not move. Equivalence bounds were ≤10 pp (Claude) and ≤15 pp (Codex). The paper's failure triage found agents fail on implementation skill, not on missing repository knowledge. One narrow process signal appeared: fewer blind full-suite test runs when a warning was in the context. The paper calls that exploratory.
+
+What it means for CodeAtlas:
+- **The unit of analysis is the task, not the run.** Average the repeats per task, then test across tasks. Run-level counts overstate the sample size.
+- **Power is the limit.** With 15–17 tasks, the minimum detectable effect was above 30 pp. A corpus of that size cannot show that a small ranking change helps or hurts. The §5 gate "hold steady" is therefore not enough for small changes.
+- **Calibrate on the model you ship.** The borderline band was set on Codex and did not transfer to Claude. Freebuff's models must set the borderline tasks.
+- **This null is about static AGENTS.md files, not retrieved graph evidence.** Do not read it as proof that CodeAtlas's context is useless. It is a warning to measure, and it supports keeping the per-task efficiency checks.
+
+### 12.2 Single-reference grading penalizes valid answers (Gorinova et al., arXiv 2606.17799)
+
+The position paper argues that benchmarks score a whole harness, grade against one reference solution, and so penalize valid alternatives. Its suggestion is to separate component signals from end-to-end scores, and to ground correctness in behavior, not in one solution.
+
+What it means for CodeAtlas:
+- **Score retrieval against a set of acceptable evidence, not one gold file.** A task often has several correct files or symbols. Count a hit if it matches any accepted item, and report misses separately.
+- **Score retrieval on its own, without an LLM.** Recall and precision against gold files are deterministic and cheap. Use them for ranking changes (P14, P16). Reserve agent-run evals for end-to-end checks.
+
+### 12.3 Proposed additions from round 6
+- **P20 — Retrieval metrics first, with a stated minimum detectable effect.** Add a deterministic harness that reports recall and precision on the §5 corpus for each ranking change. Before any claim, state the smallest difference the corpus can detect. If the corpus is too small for the change, say so and do not claim a result.
+- **P21 — Acceptable-set grading.** Each eval task lists the set of files or symbols that count as correct. Score hits against the set. Use the PR's touched files as one source, and review the set by hand.
+- **P22 — Isolation check for eval runs.** Build the index from the task's base commit only. Future commits must not be in the index, and no git history should be readable by the agent. Add a test that fails if the index includes a later commit. Khatri et al. used this kind of pruning to stop agents reading gold solutions from `git log`.
+
+### 12.4 Limitations of this round
+- Only two primary sources were read in full. I planned searches on RepoBench/CoIR-style benchmarks and on SWE-bench Verified contamination. They were not run, so §12 does not cover benchmark contamination.
+- Khatri et al. is a single-author preprint on three Python repositories. Its power numbers apply to its own corpus size.
+- No eval corpus exists yet, so P20–P22 are not measured on CodeAtlas.
+- The change is uncommitted on the current branch.
+
+---
+
+## 13. Sources
+
+- Chroma, *Context Rot* — https://www.trychroma.com/research/context-rot, *Context Rot* — https://www.trychroma.com/research/context-rot
 - Anthropic, *Effective context engineering for AI agents* — https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents
 - Anthropic, *How we built our multi-agent research system* — https://www.anthropic.com/engineering/multi-agent-research-system
 - Anthropic, *Claude prompting best practices* — https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices
@@ -218,6 +322,8 @@ Focus: what developers actually write for coding agents, and how tools load it.
 - Liu et al., *Lost in the Middle* — https://arxiv.org/abs/2307.03172
 - Jaroslawicz et al., *IFScale* — https://arxiv.org/html/2507.11538v1
 - Gloaguen et al., *Evaluating AGENTS.md* — https://arxiv.org/html/2602.11988v1
+- Khatri, *Do Context Files Help Coding Agents? A Two-Agent Ablation Study on Real Repositories* — https://arxiv.org/html/2607.27250v1
+- Gorinova et al., *Position: Coding Benchmarks Are Misaligned with Agentic Software Engineering* — https://arxiv.org/html/2606.17799
 - Lumer et al., *Don't Break the Cache* — https://arxiv.org/html/2601.06007v2
 - Anthropic, *Effective harnesses for long-running agents* — https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents
 - Aider, *Repository map* — https://aider.chat/docs/repomap.html
@@ -225,6 +331,11 @@ Focus: what developers actually write for coding agents, and how tools load it.
 - Jiang & Nam, *Beyond the Prompt: An Empirical Study of Cursor Rules* (MSR '26) — https://arxiv.org/html/2512.18925v2
 - Aider, *Specifying coding conventions* — https://aider.chat/docs/usage/conventions.html
 - Cline, *Memory Bank* — https://docs.cline.bot/best-practices/memory-bank
+- Li et al., *ContextBench: A Benchmark for Context Retrieval in Coding Agents* — https://arxiv.org/html/2602.05892v2
+- Paipuru, *The Navigation Paradox in Large-Context Agentic Coding* (CodeCompass) — https://arxiv.org/html/2602.20048v1
+- Yang et al., *SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering* — https://arxiv.org/abs/2405.15793
+- SWE-agent docs, *Agent Computer Interface (ACI)* — https://swe-agent.com/latest/background/aci/
+- Xia et al., *Agentless: Demystifying LLM-based Software Engineering Agents* — https://arxiv.org/abs/2407.01489
 
 Relevant CodeAtlas docs: `docs/decisions/ADR-016-context-modes.md`,
 `docs/decisions/ADR-014-context-item-hierarchy.md`,

@@ -111,6 +111,7 @@ function registerTools(
       tool.name,
       {
         title: tool.title,
+        ...(tool.annotations === undefined ? {} : { annotations: tool.annotations }),
         description: tool.description,
         inputSchema: tool.inputSchema,
         outputSchema: tool.outputSchema,

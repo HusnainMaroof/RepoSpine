@@ -1,5 +1,14 @@
 # CodeAtlas Architecture
 
+## Experimental local control plane (2026-10-16)
+
+The SDK now composes deterministic WorkPackets, external SessionPort delivery,
+policy preflight, VerifierPort outcomes and task-ledger continuity. Core owns
+provider-neutral types; SDK owns compilation and lifecycle; MCP only exposes a
+read-only packet builder. Legacy delivery remains default. See
+[ADR-027](../decisions/ADR-027-modular-control-plane.md) and
+[control-plane reference](../reference/CONTROL_PLANE.md).
+
 This is the **canonical** architecture reference. It documents what exists
 today (as of 2026-08-09), the target architecture the project is heading
 toward, and the gap between the two. See

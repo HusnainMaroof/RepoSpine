@@ -556,6 +556,21 @@ describe("SessionManager", () => {
   });
 
   describe("output capture", () => {
+    it("waits for a captured session to finish before returning its final state", async () => {
+      const { manager, fake } = makeManager();
+      const session = expectOk(
+        manager.createSession({ provider: "claude", repositoryPath: makeRepo() }),
+      );
+      await manager.startSession(session.id, { captureOutput: true });
+
+      const waiting = manager.waitForSession(session.id);
+      setTimeout(() => fake.processes[0]?.close(0), 5);
+      const result = await waiting;
+
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.value.status).toBe("STOPPED");
+    });
+
     it("pipes stdio and exposes captured output only when captureOutput is set", async () => {
       const { manager, fake } = makeManager();
       const repo = makeRepo();

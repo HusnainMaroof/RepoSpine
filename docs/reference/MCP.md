@@ -1,5 +1,10 @@
 # CodeAtlas MCP Server
 
+The experimental read-only `build_work_packet` tool builds a provider-neutral
+task packet with scope, source references, freshness and budget metadata. It
+does not launch sessions, run commands or persist tasks. See
+[CONTROL_PLANE.md](CONTROL_PLANE.md) for inputs and rollout constraints.
+
 Exposes a project's CodeAtlas context to AI coding tools over the **Model
 Context Protocol** (MCP) over stdio. It is the interface between the Context
 Engine (`@prof-bilal/atlas-sdk`) and external agents — Claude Desktop, Cursor, VS Code,

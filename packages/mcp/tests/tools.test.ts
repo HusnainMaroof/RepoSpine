@@ -8,6 +8,7 @@ describe("tool registry", () => {
     expect(names).toEqual([...TOOL_NAMES].sort());
     expect(names).toEqual([
       "analyze_impact",
+      "build_work_packet",
       "continue_task",
       "find_relevant_context",
       "get_dependencies",
@@ -25,13 +26,14 @@ describe("tool registry", () => {
   });
 
   it("has the expected tool count (Phase 6 + capability wave + task ledger)", () => {
-    // Original 8 core tools + 3 capability tools + 3 task-ledger tools
-    expect(TOOLS.length).toBe(14);
+    // Original 8 core + 3 capability + 3 task-ledger + 1 WorkPacket tool.
+    expect(TOOLS.length).toBe(15);
   });
 
-  it("advertises the 14 canonical tools plus 4 legacy aliases", () => {
+  it("advertises the 15 canonical tools plus 4 legacy aliases", () => {
     expect(PROTOCOL_TOOL_NAMES).toEqual([
       "analyze_impact",
+      "build_work_packet",
       "context_for",
       "continue_task",
       "dependencies_of",

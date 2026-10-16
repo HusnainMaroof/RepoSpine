@@ -543,7 +543,45 @@ export type {
   OutputContractCheck,
 } from "@prof-bilal/atlas-core";
 export { createVerifier, type VerifierServiceDeps } from "./verifier";
-export { loadVerifyConfig, VerifyConfigError } from "@prof-bilal/atlas-verifier";
+export type { WorkPacketContextIntegration } from "./context-integration";
+export {
+  buildWorkPacket,
+  compileWorkPacket,
+  renderWorkPacket,
+  evaluatePacketPolicy,
+} from "./context-integration/work-packet";
+export {
+  createControlPlane,
+  type ControlPlaneOptions,
+  type ControlPlane,
+  type ControlRunInput,
+  type ControlRunResult,
+} from "./context-integration/control-plane";
+export {
+  appendControlEvent,
+  emptyControl,
+  validateControlRecord,
+} from "./context-integration/control-state";
+export type {
+  ContextRequest,
+  EvidenceRef,
+  EvidenceRole,
+  EvidenceRepresentation,
+  WorkPacket,
+  TaskState,
+  TaskEvent,
+  TaskControlRecord,
+  PolicyDecision,
+  ActionRequest,
+  ActionObservation,
+  HandoffState,
+} from "@prof-bilal/atlas-core";
+export {
+  loadVerifyConfig,
+  VerifyConfigError,
+  loadBaseline,
+  saveBaseline,
+} from "@prof-bilal/atlas-verifier";
 export {
   addCustomSkill,
   availableSkills,

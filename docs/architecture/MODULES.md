@@ -1,5 +1,13 @@
 # CodeAtlas Modules
 
+## Experimental control-plane ownership
+
+Core owns WorkPacket/EvidenceRef and lifecycle contracts. SDK context-integration
+owns compilation, policy, observations and verification composition. Agents keep
+SessionPort ownership; verifier keeps command execution; task-ledger.ts owns v2
+continuity without a new store. MCP exposes build_work_packet through SDK only.
+See [CONTROL_PLANE.md](../reference/CONTROL_PLANE.md).
+
 This document defines **ownership**: what each module is responsible for, what
 it must **never** do, and its public surface. It is the source of truth for
 "who owns what." Status tags match [FEATURE_STATUS.md](../FEATURE_STATUS.md).

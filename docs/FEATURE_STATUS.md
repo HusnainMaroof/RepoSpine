@@ -1,7 +1,11 @@
 # CodeAtlas Feature Status
 
+**[EXPERIMENTAL] Local control plane:** SDK WorkPackets, policy/lifecycle control,
+verification feedback, versioned task continuity and read-only MCP packet building.
+Opt-in; legacy remains default. [Contract and limitations](reference/CONTROL_PLANE.md).
+
 Single source of truth for what each feature is — **verified against the code**
-(see [CURRENT_STATE.md](./CURRENT_STATE.md), last audit 2026-08-11).
+(see [CURRENT_STATE.md](./CURRENT_STATE.md), last audit 2026-10-14).
 
 ---
 

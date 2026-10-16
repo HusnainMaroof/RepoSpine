@@ -1,5 +1,8 @@
 # Architecture Decision Records
 
+- [ADR-027: Opt-in local control plane](ADR-027-modular-control-plane.md) —
+  implemented experimentally under the approved plan; pending default-on evaluation.
+
 This directory records **major** architectural decisions using lightweight
 Architecture Decision Records (ADRs). Trivial or reversible choices do **not**
 get ADRs — keep the signal high.

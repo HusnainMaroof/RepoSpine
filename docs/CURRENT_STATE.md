@@ -1,7 +1,9 @@
 # CodeAtlas — Current State
 
+**2026-10-16 update — [EXPERIMENTAL]:** Opt-in SDK WorkPackets, a local control-plane lifecycle through existing SessionPort/VerifierPort, v2 task-ledger events and read-only MCP `build_work_packet` are implemented. Legacy delivery remains default. Scope checks observe external-agent edits after execution; they are not an external-agent sandbox. See [CONTROL_PLANE.md](reference/CONTROL_PLANE.md) and ADR-027.
+
 > **Read this first.** This document records what *actually* exists in the
-> repository as of **2026-08-12** (re-verified against code), so AI agents do
+> repository as of **2026-10-14** (re-verified against code), so AI agents do
 > not mistake planned features for implemented ones. Each section is tagged:
 >
 > - **[IMPLEMENTED]** — production code exists and is tested.
@@ -25,7 +27,7 @@
 | **Language** | TypeScript, strict mode, ESM (`"type": "module"`) |
 | **Package manager** | pnpm |
 | **Git** | **Is a git repository** (branch `main`, remote `github.com/Prof-bilal/CodeAtlas.git`). `.gitignore`, `.husky`, and `commitlint` are configured. |
-| **Published version** | CLI `codeatlas-cli` `0.2.1`; `@prof-bilal/atlas-*` workspace packages `0.0.0` (`@prof-bilal/atlas-shared` `VERSION`) |
+| **Published version** | CLI `codeatlas-cli` `0.6.0`; workspace package versions are tracked in their individual manifests |
 
 Verified by full-tree inspection (`packages/*`, `apps/*`, configs) and by reading
 every package's source and tests.

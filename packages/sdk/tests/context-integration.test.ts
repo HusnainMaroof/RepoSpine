@@ -251,6 +251,20 @@ describe("denyFilter", () => {
     expect(result.pathPatterns).toContain(".env*");
   });
 
+  it("drops every dotenv suffix and credential bundle", () => {
+    for (const path of [
+      "/src/.env.production.local",
+      "/src/.envrc",
+      "/src/credentials.json",
+      "/src/credential-production.json",
+      "/src/.aws/config",
+      "/src/.ssh/config",
+    ]) {
+      const result = denyFilter(path, "harmless placeholder content");
+      expect(result.accepted, path).toBe(false);
+    }
+  });
+
   it("drops files containing a high-confidence credential", () => {
     const result = denyFilter(
       "/src/aws.env",

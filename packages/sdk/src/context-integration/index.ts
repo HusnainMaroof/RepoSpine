@@ -1,11 +1,14 @@
+import { resolve } from "node:path";
 import { UnknownSessionError } from "@prof-bilal/atlas-agents";
 import type {
   ClaimCheckResult,
   CriticConfig,
+  HandoffState,
   Session,
   SessionOutput,
   SessionPort,
   UsagePort,
+  WorkPacket,
 } from "@prof-bilal/atlas-core";
 import { type Result, fail, ok } from "@prof-bilal/atlas-shared";
 import type { ContextSDK } from "../context/sdk";
@@ -14,7 +17,7 @@ import { type AssembleOptions, assembleContextPackage } from "./assemble";
 import { type BriefingPort, createBriefingPort } from "./briefing";
 import { type CriticReview, createCritic } from "./critic";
 import { ContextAttachUnsupportedError, TaskLedgerNotFoundError } from "./errors";
-import { renderHandoffPrompt } from "./handoff";
+import { renderHandoffPrompt, renderHandoffSection } from "./handoff";
 import type { ContextBriefing, ContextExplanation, ContextPackage } from "./models";
 import { renderContextPackage, toContextExplanation } from "./render";
 import { type ContextSlice, projectContextSlice } from "./slice";
@@ -32,6 +35,7 @@ import {
   withTaskProgress,
   withTaskSession,
 } from "./task-ledger";
+import { buildWorkPacket, evaluatePacketPolicy, renderWorkPacket } from "./work-packet";
 
 export {
   BRIEFING_PROMPT_TEMPLATE,
@@ -189,7 +193,12 @@ export {
 
 /** Inputs to {@link ContextIntegration.buildPackage} / {@link ContextIntegration.explain}. */
 export interface BuildPackageInput extends AssembleOptions {
+  readonly priorState?: HandoffState;
   readonly task: string;
+  readonly deliveryMode?: "legacy" | "workPacket";
+  readonly maxTokens?: number;
+  readonly requireFresh?: boolean;
+  readonly verificationRequired?: boolean;
 }
 
 /** Inputs to {@link ContextIntegration.launch}. */
@@ -284,6 +293,7 @@ export interface ContextIntegrationOptions {
  * provider-specific logic lives here.
  */
 export interface ContextIntegration {
+  buildWorkPacket?(input: BuildPackageInput): Promise<WorkPacket>;
   /** Assemble a budgeted, deny-filtered context package for a task. */
   buildPackage(input: BuildPackageInput): Promise<ContextPackage>;
   /** Assemble a package and project it to a content-free explanation. */
@@ -348,14 +358,32 @@ export interface ContextIntegration {
   getSessionOutput(sessionId: string): SessionOutput | undefined;
 }
 
+/** Factory-created integrations always support the additive WorkPacket API. */
+export interface WorkPacketContextIntegration extends ContextIntegration {
+  buildWorkPacket(input: BuildPackageInput): Promise<WorkPacket>;
+}
+
 /** Create the Context → Agent integration façade. */
-export function createContextIntegration(options: ContextIntegrationOptions): ContextIntegration {
+export function createContextIntegration(
+  options: ContextIntegrationOptions,
+): WorkPacketContextIntegration {
   const { context, sessions } = options;
   const ai =
     options.ai ?? createBriefingPort(options.usage === undefined ? {} : { usage: options.usage });
   const critic = createCritic(undefined, options.criticConfig);
   const sessionTaskIds = new Map<string, string>();
   const repo = (): string => context.config.repositoryPath;
+  const packetPrompt = async (input: BuildPackageInput): Promise<Result<string>> => {
+    try {
+      const packet = await buildWorkPacket(context, input);
+      const policy = evaluatePacketPolicy(packet, input);
+      if (policy.status !== "allowed" && policy.status !== "allowed-with-warning")
+        return fail(new Error(policy.reasons.join(" ")));
+      return ok(renderWorkPacket(packet));
+    } catch (error) {
+      return fail(error instanceof Error ? error : new Error("WorkPacket delivery failed."));
+    }
+  };
 
   const recordSessionOnLedger = async (
     ledger: TaskLedger,
@@ -389,15 +417,28 @@ export function createContextIntegration(options: ContextIntegrationOptions): Co
     if (!created.ok) {
       return created;
     }
-    return sessions.startSession(created.value.id, {
+    const started = await sessions.startSession(created.value.id, {
       prompt,
       captureOutput: input.captureOutput !== false,
       ...(input.args !== undefined ? { args: input.args } : {}),
       ...(input.env !== undefined ? { env: input.env } : {}),
     });
+    if (
+      !started.ok ||
+      input.deliveryMode === "workPacket" ||
+      input.captureOutput === false ||
+      sessions.waitForSession === undefined
+    ) {
+      return started;
+    }
+    const completed = await sessions.waitForSession(started.value.id);
+    return completed.ok ? completed : started;
   };
 
   return {
+    buildWorkPacket(input: BuildPackageInput): Promise<WorkPacket> {
+      return buildWorkPacket(context, input);
+    },
     async buildPackage(input: BuildPackageInput): Promise<ContextPackage> {
       const staleness = await detectStaleness(context);
       return assembleContextPackage({
@@ -427,6 +468,8 @@ export function createContextIntegration(options: ContextIntegrationOptions): Co
     },
 
     async launch(input: LaunchInput): Promise<Result<Session>> {
+      if (input.deliveryMode === "workPacket" && resolve(input.repositoryPath) !== resolve(repo()))
+        return fail(new Error("Session repository differs from the packet repository."));
       const pkg = await this.buildPackage(input);
       const skillsResult = await resolveLaunchSkillsBlock(
         input.skillInstructions,
@@ -437,7 +480,14 @@ export function createContextIntegration(options: ContextIntegrationOptions): Co
         return skillsResult;
       }
       const skillsBlock = skillsResult.value;
-      const base = input.prompt ?? renderContextPackage(pkg);
+      let base = input.prompt ?? renderContextPackage(pkg);
+      if (input.deliveryMode === "workPacket") {
+        if (input.prompt !== undefined)
+          return fail(new Error("WorkPacket delivery does not accept prompt overrides."));
+        const rendered = await packetPrompt(input);
+        if (!rendered.ok) return rendered;
+        base = rendered.value;
+      }
       const started = await startWithContext(
         input,
         skillsBlock === "" ? base : `${skillsBlock}\n\n${base}`,
@@ -472,6 +522,18 @@ export function createContextIntegration(options: ContextIntegrationOptions): Co
       } catch (error) {
         return fail(error instanceof Error ? error : new TaskLedgerNotFoundError(id));
       }
+      let packetHandoff: string | undefined;
+      if (input.deliveryMode === "workPacket") {
+        if (input.prompt !== undefined || resolve(input.repositoryPath) !== resolve(repo()))
+          return fail(new Error("Invalid WorkPacket handoff override or repository."));
+        const rendered = await packetPrompt({
+          ...input,
+          task: ledger.task,
+          ...(ledger.control === undefined ? {} : { priorState: ledger.control.handoff }),
+        });
+        if (!rendered.ok) return rendered;
+        packetHandoff = rendered.value;
+      }
       const previous = ledger.sessions[ledger.sessions.length - 1];
       if (previous !== undefined) {
         const live = sessions.getSession(previous.sessionId);
@@ -499,13 +561,17 @@ export function createContextIntegration(options: ContextIntegrationOptions): Co
         return skillsResult;
       }
       const skillsBlock = skillsResult.value;
-      const base = input.prompt ?? renderHandoffPrompt(pkg, ledger);
+      const base =
+        input.deliveryMode === "workPacket"
+          ? `${packetHandoff}\n\n${renderHandoffSection(ledger)}`
+          : (input.prompt ?? renderHandoffPrompt(pkg, ledger));
       const started = await startWithContext(
         {
           provider: input.provider,
           repositoryPath: input.repositoryPath,
           task: ledger.task,
           recordTask: false,
+          ...(input.deliveryMode === undefined ? {} : { deliveryMode: input.deliveryMode }),
           ...toAssembleOptions(input),
           ...(input.prompt === undefined ? {} : { prompt: input.prompt }),
           ...(input.args === undefined ? {} : { args: input.args }),
@@ -556,7 +622,14 @@ export function createContextIntegration(options: ContextIntegrationOptions): Co
       if (session.status !== "CREATED") {
         return fail(new ContextAttachUnsupportedError(session.id, session.status));
       }
-      const base = renderContextPackage(pkg);
+      let base = renderContextPackage(pkg);
+      if (input.deliveryMode === "workPacket") {
+        if (resolve(session.repositoryPath) !== resolve(repo()))
+          return fail(new Error("Session repository differs from packet repository."));
+        const rendered = await packetPrompt(input);
+        if (!rendered.ok) return rendered;
+        base = rendered.value;
+      }
       return sessions.startSession(session.id, {
         prompt: skillsBlock === "" ? base : `${skillsBlock}\n\n${base}`,
       });
@@ -566,7 +639,10 @@ export function createContextIntegration(options: ContextIntegrationOptions): Co
       const pkg = await this.buildPackage(input);
       const generated = await ai.generate({
         target: input.task,
-        content: renderContextPackage(pkg),
+        content:
+          input.deliveryMode === "workPacket"
+            ? renderWorkPacket(await this.buildWorkPacket(input))
+            : renderContextPackage(pkg),
       });
       if (!generated.ok) {
         return generated;

@@ -108,6 +108,7 @@ export default tseslint.config(
       "**/node_modules/**",
       "**/coverage/**",
       ".codeatlas/**",
+      ".contextgit/**",
       "ui/**",
       "go-tui-app/**",
       "tests/fixtures/**",

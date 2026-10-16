@@ -307,6 +307,9 @@ secrets.
 Each run works in its own git worktree. Stay inside the files you own;
 if you must touch a file owned by another run, say so before editing.
 
-- check [claude] - (no scope claimed)
-- check [claude] - (no scope claimed)
+- researching [antigravity] - (no scope claimed)
+- research [freebuff] - (no scope claimed)
+- moreresearch [opencode] - (no scope claimed)
+- doresearch [cline] - (no scope claimed)
+- pi [pi] - (no scope claimed)
 <!-- contextgit:end -->

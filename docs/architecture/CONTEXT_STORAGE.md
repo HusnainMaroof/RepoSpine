@@ -1,5 +1,11 @@
 # CodeAtlas Context Storage
 
+Opt-in control-plane tasks extend the existing per-task JSON ledger with schema
+v2 events and a bounded handoff projection. Readers accept v1 and v2; legacy
+writes remain v1. V2 writes are size-bounded and atomically replaced. No context
+database schema changes or new memory database are introduced. See
+[CONTROL_PLANE.md](../reference/CONTROL_PLANE.md).
+
 How CodeAtlas persists project context, and the on-disk `.codeatlas/` layout.
 
 > **Status:** the `.codeatlas/` directory is created by the Scanner manifest

@@ -281,6 +281,28 @@ export class SessionManager implements SessionPort {
     return handle?.readOutput();
   }
 
+  public async waitForSession(
+    sessionId: string,
+    timeoutMs = 5 * 60 * 1000,
+  ): Promise<Result<Session>> {
+    const startedAt = Date.now();
+    for (;;) {
+      const session = this.sessions.get(sessionId);
+      if (session === undefined) {
+        return fail(new UnknownSessionError(sessionId));
+      }
+      if (session.status === "STOPPED" || session.status === "FAILED") {
+        return ok(session);
+      }
+      if (Date.now() - startedAt >= timeoutMs) {
+        return fail(
+          new SessionStateError(sessionId, `Session did not finish within ${timeoutMs}ms.`),
+        );
+      }
+      await new Promise<void>((resolve) => setTimeout(resolve, 50));
+    }
+  }
+
   // ── stopping / termination ────────────────────────────────────────────────
 
   public async stopSession(sessionId: string): Promise<Result<Session>> {

@@ -9,6 +9,29 @@ npm versions.
 
 ## [Unreleased]
 
+### Public beta candidate — 0.7.0-beta.1 (not yet published)
+
+- Opt-in change sessions, explicit obligations, temporal evidence, deterministic
+  invalidation/propagation, proof debt and bounded completion receipts.
+- Semantic coupling, investigation expectations, failure memory, falsification
+  suggestions, immutable local history and safe portable-intent import.
+- `atlas prove` lifecycle CLI and seven-tool proof MCP profile; the default
+  context profile remains available. Explicit host approval gates commands,
+  provider proposals and optional runtime predicates.
+- Release packaging repairs: CommonJS module URLs, package-local tree-sitter
+  WASM resolution, canonical Skills in bundled consumers and real version metadata.
+- Host command approvals are snapshotted before asynchronous work.
+- Correct minimum Node version to 22.13.0: the previously advertised 22.5.0
+  requires an experimental SQLite flag and cannot start the unflagged CLI.
+- Preserve nested context/usage transactions on runtimes that lack SQLite's
+  transaction-state property, with rollback/recovery regression tests.
+- Isolated production tarball installation/smoke gate, Node 22/24 CI coverage
+  and beta-only publication defaults. No publication has been performed.
+
+Proof results are bounded by represented obligations, observed repository inputs
+and host-declared capabilities. No live-agent improvement or universal semantic
+correctness is claimed. See `docs/proof-system/13-public-beta.md`.
+
 ## [0.5.2] - 2026-10-04
 
 ### Added

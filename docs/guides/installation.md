@@ -7,7 +7,7 @@ globally, or build it from source for development.
 
 | Tool | Version | Notes |
 | ---- | ------- | ----- |
-| Node.js | `>=22.5.0` | The storage layer uses the built-in `node:sqlite`. All packages share this engine floor; the `.nvmrc` pins **22**. |
+| Node.js | `>=22.13.0` | The storage layer uses the built-in `node:sqlite`. All packages share this engine floor; the `.nvmrc` pins **22**. |
 | pnpm | `9.15.0` | Pinned in `package.json`; enable via Corepack (`corepack enable`). Only needed to build from source. |
 
 Platforms: Windows, macOS, and Linux (the codebase has explicit Windows

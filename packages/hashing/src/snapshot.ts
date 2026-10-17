@@ -29,7 +29,8 @@ interface SnapshotFile {
  */
 export async function computeFileHash(path: string): Promise<Result<string>> {
   try {
-    const content = await readFile(path, "utf8");
+    // Hash raw bytes: decoding invalid UTF-8 can collapse distinct binary mutations.
+    const content = await readFile(path);
     return ok(hashContent(content));
   } catch (error) {
     return fail(error instanceof Error ? error : new Error(String(error)));

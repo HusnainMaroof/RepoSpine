@@ -1,5 +1,9 @@
 # Architecture Decision Records
 
+- [ADR-028: Temporal change proof kernel](ADR-028-temporal-proof-kernel.md) —
+  experimental proof ports/package, separate storage-owned proof.db, revision
+  invalidation and opt-in MCP profile under the approved implementation plan.
+
 - [ADR-027: Opt-in local control plane](ADR-027-modular-control-plane.md) —
   implemented experimentally under the approved plan; pending default-on evaluation.
 

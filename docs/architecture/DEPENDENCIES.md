@@ -8,6 +8,10 @@ dependencies (any package manager).
 
 ## 1. Allowed dependency directions
 
+ADR-028 adds `@prof-bilal/atlas-proof`: it imports only core/shared; the SDK may
+compose it with storage and repository/verifier adapters. Storage continues to
+own persistence, including the separate proof.db. Consumer packages use SDK.
+
 The rules below are enforced by ESLint `no-restricted-imports` (see
 `eslint.config.mjs`, `DEPENDENCY_MATRIX`). The canonical matrix:
 
@@ -116,4 +120,4 @@ Do **not** install packages simply because they are popular.
 - Audit new transitive packages (`pnpm why`, lockfile review) — supply-chain
   hygiene matters on a developer tool that runs on users' machines.
 - Pin major versions deliberately; keep engine ranges compatible with
-  `>=22.5.0` (`node:sqlite` sets the shared floor).
+  `>=22.13.0` (`node:sqlite` sets the shared floor).

@@ -11,8 +11,8 @@ the reporting format at the end of each task.
 Understand → Inspect → Plan → Implement → Test → Review → Document
 ```
 
-1. **Understand** — read `AGENTS.md`, then the relevant docs from
-   [DOCUMENTATION_MAP.md](../../README.md).
+1. **Understand** — read `AGENTS.md`, then use the
+   [documentation index](../README.md) to select the relevant docs.
 2. **Inspect** — read the actual code + tests of the modules you'll touch.
    Never assume the code matches the plan or the docs.
 3. **Plan** — identify the affected modules (ownership in

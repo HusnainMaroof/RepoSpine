@@ -15,14 +15,16 @@
   "categories": ["Other"],
   "files": ["dist"],
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && node ../../scripts/copy-prebuilt-skills.mjs dist/skills/prebuilt",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "lint": "eslint .",
     "format": "biome format --write ."
   },
   "dependencies": {
-    "@prof-bilal/atlas-sdk": "workspace:*"
+    "@prof-bilal/atlas-sdk": "workspace:*",
+    "tree-sitter-wasms": "^0.1.13",
+    "web-tree-sitter": "^0.25.0"
   },
   "devDependencies": {
     "@types/vscode": "^1.92.0"

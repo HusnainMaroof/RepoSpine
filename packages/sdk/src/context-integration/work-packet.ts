@@ -84,6 +84,8 @@ export function compileWorkPacket(
   request: ContextRequest,
   plan: ContextPlan,
 ): WorkPacket {
+  if (request.changeId !== undefined && !/^[a-f0-9]{32}$/.test(request.changeId))
+    throw new Error("Invalid linked proof change id.");
   const root = context.config.repositoryPath;
   if (
     request.scopePaths &&
@@ -217,6 +219,7 @@ export function compileWorkPacket(
   const make = (): WorkPacket => {
     const data = {
       schemaVersion: 1 as const,
+      ...(request.changeId ? { changeId: request.changeId } : {}),
       ...(request.priorState === undefined ? {} : { priorState: request.priorState }),
       task: request.task,
       scopePaths: scope,

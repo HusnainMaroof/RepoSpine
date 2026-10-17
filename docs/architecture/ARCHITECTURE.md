@@ -1,5 +1,14 @@
 # CodeAtlas Architecture
 
+## Experimental temporal change proof kernel (2026-10-17)
+
+Core defines proof entities/ports; `packages/proof` evaluates explicit obligation
+DAGs and invalidates evidence; storage owns separate `proof.db`; SDK composes
+existing scanner/hash/index/context/verifier primitives. CLI `atlas prove` and
+the opt-in seven-tool proof MCP profile expose the kernel. This is a partial
+implementation of the full product direction; see [ADR-028](../decisions/ADR-028-temporal-proof-kernel.md)
+and [phase status](../proof-system/09-implementation-phases.md).
+
 ## Experimental local control plane (2026-10-16)
 
 The SDK now composes deterministic WorkPackets, external SessionPort delivery,
@@ -10,8 +19,8 @@ read-only packet builder. Legacy delivery remains default. See
 [control-plane reference](../reference/CONTROL_PLANE.md).
 
 This is the **canonical** architecture reference. It documents what exists
-today (as of 2026-08-09), the target architecture the project is heading
-toward, and the gap between the two. See
+today (last reviewed 2026-10-17), the target architecture the project is
+heading toward, and the gap between the two. See
 [CURRENT_STATE.md](../CURRENT_STATE.md) for per-module status tags.
 
 > The repository is a **clean-architecture monorepo**. Business/domain rules
@@ -23,8 +32,10 @@ toward, and the gap between the two. See
 
 ## 1. Product Directions
 
-CodeAtlas has three major directions. The first is implemented; the other two
-are planned (with one building block of the second implemented).
+CodeAtlas has three major directions. Direction A is the established product;
+Direction B is partial; Direction C is partial with several implemented
+foundations. The status tables remain authoritative when this overview and a
+module page differ.
 
 ```
                           CodeAtlas
@@ -48,7 +59,8 @@ are planned (with one building block of the second implemented).
 ```
 
 **Direction A — Context Engine.** Analyzes repositories and builds persistent,
-reusable project context. **~85% implemented** (see §3).
+reusable project context. The core pipeline is implemented; parser coverage and
+some integrations remain partial (see `CURRENT_STATE.md`).
 
 **Direction B — Unified AI CLI Orchestrator.** A unified CLI that launches and
 manages existing AI coding CLIs. **Partly implemented** — the narrow
@@ -81,14 +93,15 @@ See [AGENT_TOOLKIT.md](./AGENT_TOOLKIT.md),
 
 ```
 apps/
-  cli/          # Commander.js CLI — thin UI; search/scan/mcp/indexing wired
+  cli/          # Commander.js CLI — thin UI over the SDK
   extension/    # VS Code extension (@prof-bilal/atlas-extension) — SDK consumer
+  chatgpt-plugin/ # ChatGPT/Codex MCP adapter — thin consumer of packages/mcp
 packages/
   shared/       # Base types, Result, branded IDs, VERSION             (foundation)
   core/         # Domain entities + port interfaces (type-only)        (foundation)
   scanner/      # File walking + ignore + language/framework + manifest
   hashing/      # SHA-256, change detection, JSON snapshots
-  parser/       # Language → normalized Symbol IR (TypeScript via ts-morph)
+  parser/       # Language → normalized Symbol IR (TS/JS + tree-sitter languages)
   graph/        # Dependency graph (imports, calls, inheritance, cycles)
   storage/      # SQLite context database (node:sqlite) + repositories
   cache/        # Generic caching (TTL + optional JSON persistence)
@@ -97,6 +110,11 @@ packages/
   search/       # Ranked, fuzzy-aware project search (vector-ready seam)
   context/      # Context ranking & assembly (deterministic rank-and-assemble)
   agents/       # AI CLI connection layer (AgentPort) — spawn/detect external AI CLIs
+  usage/        # AI usage, budgets, limits, and provenance
+  metrics/       # Local token/usage analytics
+  verifier/      # Deterministic claim verification
+  proof/         # Experimental revision-aware proof evaluation
+  toolkit/       # Tool registry, manifests, installer, configurator, Skills
   mcp/          # MCP server exposing context to AI tools (consumes the SDK)
   sdk/          # Composition root (Container) + Context API/SDK (createContextSDK)
 docs/           # This documentation system
@@ -248,17 +266,16 @@ hashing  storage         cache             providers      (indexes the    agents
             packages/shared (base types/utils)
 ```
 
-Planned additions (not yet in the repo):
+Remaining planned additions:
 - **Agent Router** + slash commands (Claude/Gemini/Codex/OpenCode/DeepSeek)
   for Direction B — the `@prof-bilal/atlas-agents` connection layer *and* the **Agent
   Session Manager** exist (see [AGENT_SESSIONS.md](./AGENT_SESSIONS.md)); the
   router itself does not. See [AGENT_ORCHESTRATOR.md](./AGENT_ORCHESTRATOR.md).
-- **Agent Toolkit** (`@prof-bilal/atlas-toolkit` + `atlas tools` CLI) for Direction C —
-  curated tool registry, installer, configurator, compatibility, security/trust.
-  The **Tool Registry**, **Tool Manifest**, **Compatibility Engine**, **Tool
-  Installer**, and **Tool Configurator** are implemented (Tasks 19–23);
-  The broader CLI surface remains planned; Security/Trust is implemented.
-  See [AGENT_TOOLKIT.md](./AGENT_TOOLKIT.md).
+- **Broader Agent Toolkit integrations** for Direction C — the registry,
+  manifest, compatibility, installer, configurator, security/trust assessor,
+  Skills loader, and `atlas tools` surface exist; slash integration and broader
+  cross-platform validation remain follow-up work. See
+  [AGENT_TOOLKIT.md](./AGENT_TOOLKIT.md).
 - **SDK consumers** and a working CLI wired end-to-end. MCP (`@prof-bilal/atlas-mcp`) is
   an implemented SDK consumer — see [MCP.md](../reference/MCP.md).
 

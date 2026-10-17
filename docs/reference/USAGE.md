@@ -153,7 +153,7 @@ or per-provider pricing adapter implements the same interface — no
 ## 6. On-disk storage & the SDK surface
 
 - **Store:** `UsageStore` (`@prof-bilal/atlas-usage`) — SQLite via `node:sqlite`
-  (needs Node `>=22.5.0`), schema + migrations in `@prof-bilal/atlas-usage` (usage /
+  (needs Node `>=22.13.0`), schema + migrations in `@prof-bilal/atlas-usage` (usage /
   budget / limit tables via row/repository helpers). Defaults to `:memory:`.
 - **SDK:** `createUsageService({ filePath?, store?, pricing? })` (`@prof-bilal/atlas-sdk` →
   `./usage/service.ts`) returns a fully-wired `UsagePort`. Consumers (CLI, MCP,
@@ -198,7 +198,7 @@ computed on stop.
 
 - Never log or print provider config / API keys (records don't hold them).
 - Never send prompts out: usage records store metadata only; `taskRef` is hashed.
-- `node:sqlite` engine requirement (`>=22.5.0`) — see [CONTEXT_STORAGE.md](../architecture/CONTEXT_STORAGE.md).
+- `node:sqlite` engine requirement (`>=22.13.0`) — see [CONTEXT_STORAGE.md](../architecture/CONTEXT_STORAGE.md).
 - Pricing values are labeled `estimated` and must never be presented as actual
   provider billing.
 

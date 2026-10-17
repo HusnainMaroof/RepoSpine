@@ -12,6 +12,27 @@ agents work with.
 Repository → scan → hash → parse → graph → context.db → Context SDK → CLI · MCP · VS Code · agents
 ```
 
+## Change-proof public beta candidate
+
+`0.7.0-beta.1` adds an opt-in mutation-aware proof system on top of the existing
+context engine: explicit change requirements, revision-bound evidence, automatic
+invalidation, proof debt, verification planning, and completion receipts.
+Models can propose obligations; their statements cannot supply passing evidence.
+
+The candidate is prepared locally, **not a claim that it has been published**.
+After maintainer publication, install with `npm install -g codeatlas-cli@beta`.
+From source, run `pnpm install --frozen-lockfile && pnpm build`, then
+`node apps/cli/dist/index.js prove --help` or
+`node apps/cli/dist/index.js mcp --root /path/to/repo --profile proof`.
+The default context MCP profile remains compatible.
+
+Start with the [bounded proof example](docs/proof-system/README.md#first-run).
+A `proven` receipt means the explicitly represented checks satisfy the configured
+policy at the observed revision; it is **not** universal correctness, complete
+test coverage, a signed attestation, or proof that an agent interpreted your goal
+correctly. Live-agent quality gains have not been measured.
+See the [beta guarantees and release checklist](docs/proof-system/13-public-beta.md).
+
 ## Why CodeAtlas
 
 LLMs work best with *relevant, fresh context*, not whole repositories:
@@ -43,8 +64,9 @@ LLMs work best with *relevant, fresh context*, not whole repositories:
 - **Context SDK** (`@prof-bilal/atlas-sdk`) — the single read interface every
   consumer uses: files, symbols, dependencies, modules, summaries, search,
   project stats, and freshness.
-- **MCP server** (`@prof-bilal/atlas-mcp`) — read-only tools over stdio for any
-  MCP client, including `list_skills` / `get_skill`.
+- **MCP server** (`@prof-bilal/atlas-mcp`) — compatible context tools over stdio,
+  including `list_skills` / `get_skill`, plus an opt-in seven-tool proof profile
+  that writes local change state and runs only host-approved verification actions.
 - **Skills** — 13 first-party workflow Skills (planning, debugging,
   verification, security review, MCP building, research, UI workflows) shipped
   as canonical `SKILL.md` files, plus project-local Skills you author yourself.
@@ -63,7 +85,7 @@ LLMs work best with *relevant, fresh context*, not whole repositories:
 
 ## Installation
 
-Requirements: **Node.js `>=22.5.0`** (the storage layer uses the built-in
+Requirements: **Node.js `>=22.13.0`** (the storage layer uses the built-in
 `node:sqlite`; every package shares that engine floor).
 
 ```bash
@@ -147,7 +169,7 @@ Full walkthrough: [docs/guides/getting-started.md](docs/guides/getting-started.m
 
 ## CLI
 
-29 top-level commands. The common ones:
+31 top-level commands. The common ones:
 
 ```text
 atlas init|build|update [--repo <path>]   Index / rebuild / incrementally update

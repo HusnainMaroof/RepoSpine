@@ -1,5 +1,17 @@
 # CodeAtlas Modules
 
+## Experimental change proofs
+
+`packages/proof` owns deterministic proof compilation, dependency evaluation,
+invalidation, debt, investigation and action ranking behind core proof ports.
+`packages/storage/src/proof-store.ts` owns independent proof schema/versioning,
+bounded state, immutable compressed history, proof execution leases and advisory
+memory. `packages/sdk/src/proof` owns scanner/hash/context/Git/verifier/watch/
+usage/runtime composition. Core/SDK task contracts carry optional proof linkage.
+CLI and MCP use SDK only. `context.db` remains
+the repository cache; proof state survives its rebuild. See ADR-028 and
+[proof-system index](../proof-system/README.md).
+
 ## Experimental control-plane ownership
 
 Core owns WorkPacket/EvidenceRef and lifecycle contracts. SDK context-integration
@@ -75,12 +87,13 @@ Responsible for change detection.
 - Must **NOT**: decide *what* files to process (that's the caller's job), or
   perform parsing.
 
-### Parser — « `@prof-bilal/atlas-parser` » — **[IMPLEMENTED — TypeScript only]**
+### Parser — « `@prof-bilal/atlas-parser` » — **[PARTIAL]**
 Responsible for source-code parsing.
 
 - Owns: `LanguageParser` interface + `ParserRegistry` (plugin seam),
-  `TypeScriptParser` (ts-morph → normalized `Symbol`s), `ParsedFile`,
-  reference extraction.
+  `TypeScriptParser` (ts-morph → normalized `Symbol`s), tree-sitter parsers for
+  Python/Go/Java/C#/Rust, `ParsedFile`, and reference extraction. Grammar
+  loading is lazy; a missing grammar degrades to a skipped language.
 - Must **NOT**: build the dependency graph (that's `graph`'s job), summarise
   with AI, or know about storage.
 

@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import type { ApprovedProofCommand, ProofSDKOptions } from "@prof-bilal/atlas-sdk";
 import { VERSION } from "@prof-bilal/atlas-sdk";
 import { type ToolCallBudget, createToolCallBudget } from "./budget";
 import { CodeAtlasContext, type CodeAtlasContextOptions } from "./context";
@@ -9,12 +10,17 @@ import type { FreshnessReport } from "./freshness";
 import { executeHandler } from "./handler-utils";
 import { HANDLERS, type HandlerContext } from "./handlers";
 import { type LogLevel, type Logger, createLogger } from "./log";
+import { registerProofTools } from "./proof";
 import { registerResources } from "./resources";
 import { type RunnableTool, TOOLS, TOOL_ALIASES, type ToolDefinition } from "./tools";
 import { type ToolArgs, ToolDomainError, ToolInputError } from "./validation";
 
 /** Options for creating or starting a CodeAtlas MCP server. */
 export interface McpServerOptions extends CodeAtlasContextOptions {
+  /** Opt-in seven-tool proof profile; context is the compatibility default. */
+  readonly toolProfile?: "context" | "proof";
+  readonly proofCommands?: Readonly<Record<string, ApprovedProofCommand>>;
+  readonly proofOptions?: Omit<ProofSDKOptions, "repositoryPath" | "commands">;
   /** Inject a logger; defaults to stderr logging at `ATLAS_MCP_LOG_LEVEL`. */
   readonly logger?: Logger;
   /** Minimum log level when no logger is injected. */
@@ -54,7 +60,11 @@ export function createMcpServer(options: McpServerOptions = {}): CodeAtlasMcpSer
   // budget.ts). This is the seam that travels the budget from the ollama-only
   // runner to opencod / kilo / any MCP client.
   const budget = createToolCallBudget();
-  registerTools(server, context, logger, budget);
+  const closeProof =
+    options.toolProfile === "proof"
+      ? registerProofTools(server, context, options.proofCommands, budget, options.proofOptions)
+      : undefined;
+  if (options.toolProfile !== "proof") registerTools(server, context, logger, budget);
   registerResources(server, context, logger);
   return {
     server,
@@ -62,6 +72,7 @@ export function createMcpServer(options: McpServerOptions = {}): CodeAtlasMcpSer
     logger,
     connect: (transport) => server.connect(transport),
     close: async () => {
+      await closeProof?.();
       context.close();
       await server.close();
     },

@@ -14,12 +14,15 @@ export function registerMcp(program: Command): void {
     .command("mcp")
     .description("Start the CodeAtlas MCP server over stdio (for AI coding tools)")
     .option("--root <path>", "project root to index (defaults to ATLAS_ROOT or cwd)")
-    .action(async (options: { root?: string }) => {
+    .option("--profile <profile>", "context (default) or proof tool profile", "context")
+    .action(async (options: { root?: string; profile: string }) => {
+      if (options.profile !== "context" && options.profile !== "proof")
+        throw new Error("MCP profile must be context or proof.");
       const root = options.root === undefined ? resolveProjectRoot() : resolve(options.root);
       const metrics = openMetrics(root);
       const usage = openUsage(root);
       try {
-        await startStdioServer({ root, metrics, usage });
+        await startStdioServer({ root, metrics, usage, toolProfile: options.profile });
       } finally {
         metrics.flush();
         metrics.close();

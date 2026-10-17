@@ -1,9 +1,11 @@
 import { resolve } from "node:path";
 import type {
   ActionObservation,
+  ChangeReceipt,
   ContextRequest,
   HandoffState,
   PolicyDecision,
+  ProofPort,
   SessionPort,
   TaskEvent,
   VerificationReport,
@@ -31,8 +33,11 @@ export interface ControlPlaneOptions {
   readonly integration: ContextIntegration;
   readonly sessions: SessionPort;
   readonly verifier: VerifierPort;
+  /** Opt-in proof gate; legacy task behavior is unchanged without this port. */
+  readonly proof?: ProofPort;
 }
 export interface ControlRunInput extends ContextRequest {
+  readonly changeId?: string;
   readonly provider: string;
   readonly taskId?: string;
   readonly resume?: boolean;
@@ -42,6 +47,8 @@ export interface ControlRunInput extends ContextRequest {
   readonly verifyConfig?: VerifyConfig;
 }
 export interface ControlRunResult {
+  readonly changeId?: string;
+  readonly proofReceipt?: ChangeReceipt;
   readonly taskId: string;
   readonly packet: WorkPacket;
   readonly policy: PolicyDecision;
@@ -124,8 +131,24 @@ export function createControlPlane(options: ControlPlaneOptions): ControlPlane {
       try {
         const previousLedger =
           input.taskId === undefined ? null : await loadTaskLedger(root, input.taskId);
+        if (
+          previousLedger?.changeId &&
+          input.changeId &&
+          previousLedger.changeId !== input.changeId
+        )
+          throw new Error("Cannot replace a task's linked change session.");
+        let changeId = input.changeId ?? previousLedger?.changeId;
+        if (changeId && !options.proof) throw new Error("Linked change requires a proof engine.");
+        if (options.proof) {
+          if (changeId) await options.proof.check(changeId);
+          else
+            changeId = (
+              await options.proof.begin({ goal: input.task, boundary: input.scopePaths ?? ["."] })
+            ).session.id;
+        }
         const request = {
           ...input,
+          ...(changeId ? { changeId } : {}),
           ...(previousLedger?.control === undefined
             ? {}
             : { priorState: previousLedger.control.handoff }),
@@ -179,6 +202,7 @@ export function createControlPlane(options: ControlPlaneOptions): ControlPlane {
           ...ledger,
           schemaVersion: 2,
           control: ledger.control ?? emptyControl(packet.scopePaths),
+          ...(changeId ? { changeId } : {}),
         };
         const emit = async (event: Omit<TaskEvent, "sequence" | "packetId">): Promise<void> => {
           ledger = {
@@ -220,6 +244,7 @@ export function createControlPlane(options: ControlPlaneOptions): ControlPlane {
           detail: `Compiled packet ${packet.id}`,
         });
         const result = (extra: Partial<ControlRunResult> = {}): ControlRunResult => ({
+          ...(changeId ? { changeId } : {}),
           taskId: ledger?.id ?? "",
           packet,
           policy,
@@ -481,6 +506,23 @@ export function createControlPlane(options: ControlPlaneOptions): ControlPlane {
           state: "verifying",
           detail: "Verification passed.",
         });
+        if (options.proof && changeId) {
+          const receipt = await options.proof.prove(changeId);
+          if (receipt.completion !== "proven") {
+            await emit({
+              kind: "verification-failed",
+              state: "blocked",
+              detail: `Proof gate ${receipt.completion}; change ${changeId} still has unresolved correctness work.`,
+            });
+            return result({ observation, verification, proofReceipt: receipt });
+          }
+          await emit({
+            kind: "completed",
+            state: "complete",
+            detail: `Proof receipt ${receipt.id}; change ${changeId}.`,
+          });
+          return result({ observation, verification, proofReceipt: receipt });
+        }
         await emit({
           kind: "completed",
           state: "complete",

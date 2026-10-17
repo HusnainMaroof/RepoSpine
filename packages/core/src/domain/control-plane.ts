@@ -22,6 +22,7 @@ export type TaskState =
   | "complete"
   | "handed-off";
 export interface ContextRequest {
+  readonly changeId?: string;
   readonly priorState?: HandoffState;
   readonly task: string;
   readonly scopePaths?: readonly string[];
@@ -47,6 +48,7 @@ export interface EvidenceRef {
   readonly deferred: boolean;
 }
 export interface WorkPacket {
+  readonly changeId?: string;
   readonly priorState?: HandoffState;
   readonly schemaVersion: 1;
   readonly id: string;

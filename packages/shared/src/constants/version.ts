@@ -1,5 +1,7 @@
+import pkg from "../../package.json";
+
 /** Human-readable project name. */
 export const NAME = "codeatlas";
 
-/** Current version. Kept in sync with the root `package.json`. */
-export const VERSION = "0.0.0";
+/** Release-train version, embedded by the build rather than read at runtime. */
+export const VERSION = pkg.version;

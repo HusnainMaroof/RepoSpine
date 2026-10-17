@@ -112,7 +112,7 @@ Belt-and-braces on anything that touches a shell, a path, or the network.
 
 `@prof-bilal/atlas-mcp` exposes *context* to external agents over stdio (see `docs/reference/MCP.md`):
 
-- All seven tools are **read-only** today: they query the persisted index
+- The compatibility context tools are **read-only**: they query the persisted index
   (`search_*`, `get_dependencies`, `explain_module`, `project_overview`,
   `read_file_range`) or
   read a stored summary. None mutate the analyzed repo or execute commands.
@@ -122,6 +122,16 @@ Belt-and-braces on anything that touches a shell, a path, or the network.
 - Any future write/exec tool must be added with explicit consent + logging.
 - The server serves project context only to whatever local process launched it;
   it is bound to that process's stdio and exposes no network endpoint.
+
+The opt-in seven-tool **proof profile** is deliberately stateful and annotated
+readOnlyHint:false. It persists local proof state and observes repository files.
+Execution is limited to explicit host-approved command/probe keys; requests
+cannot submit executables, verdicts or evidence bodies. Model proposals require
+a host-configured ProviderPort/UsagePort and explicit per-call approval. Default
+stdio proof mode has no approved commands, provider or runtime probe. Source/Git
+metadata watching is local; stdout/stderr, response bodies and credentials are not
+retained as proof. Tools record request metadata; errors deny-filter sensitive
+details and replace the repository root with a relative placeholder.
 
 ---
 

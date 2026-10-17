@@ -19,6 +19,7 @@ import {
   createContextIntegration,
   createContextSDK,
   createControlPlane,
+  createProofSDK,
   detectStaleness,
   emptyControl,
   estimateTokens,
@@ -349,6 +350,50 @@ describe("control plane lifecycle", () => {
 });
 
 describe("control plane safety and recovery", () => {
+  it("links proof state across providers and blocks false completion despite passing commands", async () => {
+    const { root, sdk } = await fixture();
+    const proof = await createProofSDK({ repositoryPath: root });
+    const sessions = sessionPort(root);
+    try {
+      const plane = createControlPlane({
+        context: sdk,
+        integration: createContextIntegration({ context: sdk, sessions: sessions.port }),
+        sessions: sessions.port,
+        verifier: verifier(),
+        proof,
+      });
+      const first = await plane.run({ task: "Explain double", provider: "agent-a", verifyConfig });
+      expect(first.proofReceipt?.completion).toBe("not-proven");
+      expect(first.handoff.state).toBe("blocked");
+      expect(first.changeId).toMatch(/^[a-f0-9]{32}$/);
+      expect(first.packet.changeId).toBe(first.changeId);
+      expect(sessions.prompts[0]).toContain(first.changeId);
+      const ledger = await loadTaskLedger(root, first.taskId);
+      expect(ledger?.changeId).toBe(first.changeId);
+      const resumed = await plane.run({
+        task: "Explain double",
+        provider: "agent-b",
+        verifyConfig,
+        taskId: first.taskId,
+        resume: true,
+      });
+      expect(resumed.changeId).toBe(first.changeId);
+      expect(resumed.handoff.state).toBe("blocked");
+      await expect(
+        plane.run({
+          task: "Explain double",
+          provider: "agent-b",
+          verifyConfig,
+          taskId: first.taskId,
+          resume: true,
+          changeId: "a".repeat(32),
+        }),
+      ).rejects.toThrow("replace");
+    } finally {
+      proof.close();
+      sdk.close();
+    }
+  });
   it("verifies deliberate deletion without claiming the deleted path still exists", async () => {
     const { root, sdk } = await fixture();
     const sessions = sessionPort(root, () => unlinkSync(join(root, "src/math.ts")));

@@ -20,7 +20,7 @@ moment `context.db` appears — no restart needed.
 
 ## SQLite / `node:sqlite` errors
 
-`@prof-bilal/atlas-storage` requires **Node `>=22.5.0`**. Symptoms: `ERR_UNKNOWN_FILE_EXTENSION`
+`@prof-bilal/atlas-storage` requires **Node `>=22.13.0`**. Symptoms: `ERR_UNKNOWN_FILE_EXTENSION`
 or a `node:sqlite` module-not-found at runtime.
 
 Fix: switch to Node 22 (`nvm use 22` / match `.nvmrc`) and re-run

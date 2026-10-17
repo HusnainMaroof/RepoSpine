@@ -420,6 +420,7 @@ describe("atlas CLI", () => {
       "metrics",
       "ollama",
       "opencode",
+      "prove",
       "providers",
       "scan",
       "search",

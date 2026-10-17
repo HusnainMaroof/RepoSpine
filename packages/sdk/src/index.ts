@@ -1,4 +1,44 @@
 export { VERSION } from "@prof-bilal/atlas-shared";
+export {
+  createProofSDK,
+  type ProofSDK,
+  type ProofSDKOptions,
+  type ApprovedProofCommand,
+  type ApprovedRuntimeProof,
+} from "./proof";
+export type {
+  BeginChangeInput,
+  ProofPort,
+  ChangeSession,
+  ChangeReceipt,
+  RepositoryRevision,
+  RepositoryArtifact,
+  ProofProposal,
+  ProofReport,
+  ProofLevel,
+  ProofStatus,
+  ProofDebtItem,
+  ProofNode,
+  Evidence,
+  VerificationAction,
+  VerificationResult,
+  Requirement,
+  Constraint,
+  Invariant,
+  Claim,
+  Assumption,
+  Unknown,
+  ProofObligation,
+  ProofSeverity,
+  ProofNodeState,
+  ChangeSessionState,
+  Blindspot,
+  CouplingSignal,
+  TemporalProofGraph,
+  ProofHistoryEntry,
+  InvestigationRule,
+  MutationJustification,
+} from "@prof-bilal/atlas-core";
 export type { FilePath, Result } from "@prof-bilal/atlas-shared";
 export { estimateTokens, fail, ok } from "@prof-bilal/atlas-shared";
 export type {

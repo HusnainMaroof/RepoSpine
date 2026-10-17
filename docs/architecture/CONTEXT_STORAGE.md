@@ -1,5 +1,14 @@
 # CodeAtlas Context Storage
 
+## Experimental proof state
+
+`.codeatlas/proof.db` is independent durable change-proof state, owned by
+`packages/storage/src/proof-store.ts`. Its additive schema v3 stores bounded proof
+sessions, advisory memory, compressed immutable session-version history and
+expiring owner-bound proof execution leases. Rebuilding context.db does not clear it. It is
+gitignored local state, not a signed audit archive. See
+[proof data model](../proof-system/03-data-model.md).
+
 Opt-in control-plane tasks extend the existing per-task JSON ledger with schema
 v2 events and a bounded handoff projection. Readers accept v1 and v2; legacy
 writes remain v1. V2 writes are size-bounded and atomically replaced. No context
@@ -55,7 +64,7 @@ How CodeAtlas persists project context, and the on-disk `.codeatlas/` layout.
 | ----- | ----- | ----- |
 | `manifest.json` | `packages/scanner/src/manifest.ts` | Written by `generateManifest(scan)`. Schema versioned; `createdAt` preserved, `updatedAt` refreshed, rest recomputed from the scan. |
 | Versioned hash snapshots | `@prof-bilal/atlas-hashing` (JSON snapshots) | These live wherever the caller chooses (`saveSnapshot(path)`), not yet standardized under `.codeatlas/`. |
-| SQLite context DB | `@prof-bilal/atlas-storage` (`ContextStore`) | Backed by `node:sqlite` (Needs Node ≥22.5.0). `ContextStoreOptions.filePath` selects the file (default `:memory:`); WAL for file-backed stores. Written via `saveContext`/`updateContext`; read by the SDK/CLI/MCP/extension. |
+| SQLite context DB | `@prof-bilal/atlas-storage` (`ContextStore`) | Backed by `node:sqlite` (Needs Node ≥22.13.0). `ContextStoreOptions.filePath` selects the file (default `:memory:`); WAL for file-backed stores. Written via `saveContext`/`updateContext`; read by the SDK/CLI/MCP/extension. |
 | Task ledgers (`tasks/`) | `@prof-bilal/atlas-sdk` (`task-ledger.ts`, ADR-025) | Per-task JSON under `.codeatlas/tasks/<id>.json`: session chain, bounded captured output, hash-delta files touched. Untrusted-load (path-safe ids, size bound). Not a session-process database. |
 
 ---

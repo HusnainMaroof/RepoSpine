@@ -67,7 +67,7 @@ export interface DoctorReport {
   readonly atlas?: AtlasCompletion;
 }
 
-const MINIMUM_NODE = [22, 5, 0];
+const MINIMUM_NODE = [22, 13, 0];
 
 export function registerDoctor(program: Command, options: DoctorCommandOptions = {}): void {
   program

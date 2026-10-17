@@ -13,7 +13,7 @@ docs when you reach that step.
 ## 1. Getting started
 
 1. Follow [DEVELOPMENT.md](./DEVELOPMENT.md) to install and run `pnpm check`
-   from the repo root (Node ≥ 22.5.0 — the shared `node:sqlite` floor).
+   from the repo root (Node ≥ 22.13.0 — the shared `node:sqlite` floor).
 2. Read the docs index: [docs/README.md](../README.md) and the repository map
    [docs/REPOSITORY_MAP.md](../REPOSITORY_MAP.md) (where to add a Tool, a Skill,
    or a CLI command).

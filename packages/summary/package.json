@@ -1,6 +1,6 @@
 {
   "name": "@prof-bilal/atlas-summary",
-  "version": "0.5.2",
+  "version": "0.7.0-beta.1",
   "description": "AI summary engine for CodeAtlas.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -23,7 +23,7 @@
     "format": "biome format --write ."
   },
   "engines": {
-    "node": ">=22.5.0"
+    "node": ">=22.13.0"
   },
   "dependencies": {
     "@prof-bilal/atlas-core": "workspace:^",
@@ -43,7 +43,8 @@
     "url": "https://github.com/Prof-bilal/CodeAtlas/issues"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "tag": "beta"
   },
   "author": "CodeAtlas contributors"
 }

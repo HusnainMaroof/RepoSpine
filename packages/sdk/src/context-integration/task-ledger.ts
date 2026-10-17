@@ -78,6 +78,7 @@ export interface TaskProgress {
 
 /** Durable task that can span many provider sessions. */
 export interface TaskLedger {
+  readonly changeId?: string;
   readonly control?: TaskControlRecord;
   readonly id: string;
   readonly schemaVersion: number;
@@ -437,6 +438,9 @@ export function validateTaskLedger(value: unknown): TaskLedger {
   );
 
   let control: TaskControlRecord | undefined;
+  const changeId = value["changeId"];
+  if (changeId !== undefined && (typeof changeId !== "string" || !/^[a-f0-9]{32}$/.test(changeId)))
+    throw new TaskLedgerValidationError("Invalid linked proof change id.");
   if (value["schemaVersion"] === 2) {
     try {
       control = validateControlRecord(value["control"]);
@@ -445,6 +449,7 @@ export function validateTaskLedger(value: unknown): TaskLedger {
     }
   }
   return {
+    ...(typeof changeId === "string" ? { changeId } : {}),
     ...(control === undefined ? {} : { control }),
     id,
     schemaVersion: value["schemaVersion"] as number,

@@ -1,3 +1,4 @@
+import { realpathSync } from "node:fs";
 import { isAbsolute, relative, resolve, sep } from "node:path";
 import type {
   ContextPlan,
@@ -52,7 +53,21 @@ export function packetPath(root: string, path: string): string {
     (/^[a-z]:/i.test(portable) && !isAbsolute(portable))
   )
     throw new Error("Unsafe scope path.");
-  const normalized = relative(resolve(root), resolve(root, portable)).split(sep).join("/");
+  // macOS exposes temporary directories through lexical aliases such as
+  // `/var` while filesystem APIs may return their canonical `/private/var`
+  // spelling. Compare canonical paths when they exist so indexed files do not
+  // appear to escape the repository on one platform only. A missing path falls
+  // back to lexical resolution, retaining the traversal guard.
+  const canonical = (candidate: string): string => {
+    try {
+      return realpathSync.native(candidate);
+    } catch {
+      return candidate;
+    }
+  };
+  const normalized = relative(canonical(resolve(root)), canonical(resolve(root, portable)))
+    .split(sep)
+    .join("/");
   if (normalized === ".." || normalized.startsWith("../") || isAbsolute(normalized))
     throw new Error("Scope is outside the repository.");
   return normalized || ".";

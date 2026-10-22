@@ -50,12 +50,12 @@ export function registerCommands(ctx: CommandContext): VscodeDisposable[] {
   return disposables;
 }
 
-/** `CodeAtlas: Open Project Overview` — summarize the current index. */
+/** `RepoSpine: Open Project Overview` — summarize the current index. */
 export async function openOverview(ctx: CommandContext): Promise<void> {
   const { client, host } = ctx;
   if (!client.isAvailable) {
     await host.window.showWarningMessage(
-      "No CodeAtlas index yet. Run CodeAtlas: Build to create one.",
+      "No RepoSpine index yet. Run RepoSpine: Build to create one.",
     );
     return;
   }
@@ -73,12 +73,12 @@ async function guardAvailable(ctx: CommandContext): Promise<boolean> {
     return true;
   }
   await ctx.host.window.showErrorMessage(
-    "No CodeAtlas index in this workspace. Run CodeAtlas: Build to create one.",
+    "No RepoSpine index in this workspace. Run RepoSpine: Build to create one.",
   );
   return false;
 }
 
-/** `CodeAtlas: Search Symbols` — quick-pick a symbol and open it. */
+/** `RepoSpine: Search Symbols` — quick-pick a symbol and open it. */
 export async function searchSymbols(ctx: CommandContext): Promise<void> {
   const { client, host } = ctx;
   if (!(await guardAvailable(ctx))) {
@@ -86,7 +86,7 @@ export async function searchSymbols(ctx: CommandContext): Promise<void> {
   }
   const symbols = client.listSymbols();
   if (symbols.length === 0) {
-    await host.window.showInformationMessage("No symbols in the CodeAtlas index.");
+    await host.window.showInformationMessage("No symbols in the RepoSpine index.");
     return;
   }
   const items: VscodeQuickPickItem[] = symbols.map((s) => ({
@@ -107,7 +107,7 @@ export async function searchSymbols(ctx: CommandContext): Promise<void> {
   }
 }
 
-/** `CodeAtlas: Search Files` — quick-pick an indexed file and open it. */
+/** `RepoSpine: Search Files` — quick-pick an indexed file and open it. */
 export async function searchFiles(ctx: CommandContext): Promise<void> {
   const { client, host } = ctx;
   if (!(await guardAvailable(ctx))) {
@@ -115,7 +115,7 @@ export async function searchFiles(ctx: CommandContext): Promise<void> {
   }
   const files = client.listFiles();
   if (files.length === 0) {
-    await host.window.showInformationMessage("No files in the CodeAtlas index.");
+    await host.window.showInformationMessage("No files in the RepoSpine index.");
     return;
   }
   const items: VscodeQuickPickItem[] = files.map((file) => ({
@@ -128,7 +128,7 @@ export async function searchFiles(ctx: CommandContext): Promise<void> {
   }
 }
 
-/** `CodeAtlas: Show Modules` — list the indexed modules. */
+/** `RepoSpine: Show Modules` — list the indexed modules. */
 export async function showModules(ctx: CommandContext): Promise<void> {
   const { client, host } = ctx;
   if (!(await guardAvailable(ctx))) {
@@ -136,17 +136,17 @@ export async function showModules(ctx: CommandContext): Promise<void> {
   }
   const modules = client.modules();
   if (modules.length === 0) {
-    await host.window.showInformationMessage("No modules in the CodeAtlas index.");
+    await host.window.showInformationMessage("No modules in the RepoSpine index.");
     return;
   }
   const items: VscodeQuickPickItem[] = modules.map((m) => ({ label: m.name, description: m.path }));
   const picked = await host.window.showQuickPick(items, { placeHolder: "Choose a module" });
   if (picked !== undefined) {
-    await host.window.showInformationMessage(`CodeAtlas module: ${picked.label}`);
+    await host.window.showInformationMessage(`RepoSpine module: ${picked.label}`);
   }
 }
 
-/** `CodeAtlas: Show Summaries` — overviews of the stored summaries. */
+/** `RepoSpine: Show Summaries` — overviews of the stored summaries. */
 export async function showSummaries(ctx: CommandContext): Promise<void> {
   const { client, host } = ctx;
   if (!(await guardAvailable(ctx))) {
@@ -154,7 +154,7 @@ export async function showSummaries(ctx: CommandContext): Promise<void> {
   }
   const summaries = client.summaries();
   if (summaries.length === 0) {
-    await host.window.showInformationMessage("No summaries in the CodeAtlas index.");
+    await host.window.showInformationMessage("No summaries in the RepoSpine index.");
     return;
   }
   const preview = summaries
@@ -167,7 +167,7 @@ export async function showSummaries(ctx: CommandContext): Promise<void> {
   await host.window.showInformationMessage(`${summaries.length} summary(ies)\n${preview}`);
 }
 
-/** `CodeAtlas: Show Dependency Graph` — the edge count plus a sample. */
+/** `RepoSpine: Show Dependency Graph` — the edge count plus a sample. */
 export async function showDependencies(ctx: CommandContext): Promise<void> {
   const { client, host } = ctx;
   if (!(await guardAvailable(ctx))) {
@@ -175,7 +175,7 @@ export async function showDependencies(ctx: CommandContext): Promise<void> {
   }
   const dependencies = client.dependencies();
   if (dependencies.length === 0) {
-    await host.window.showInformationMessage("No dependencies in the CodeAtlas index.");
+    await host.window.showInformationMessage("No dependencies in the RepoSpine index.");
     return;
   }
   const count = dependencies.length;
@@ -186,51 +186,51 @@ export async function showDependencies(ctx: CommandContext): Promise<void> {
   await host.window.showInformationMessage(`${count} edge${count === 1 ? "" : "s"}\n${sample}`);
 }
 
-/** `CodeAtlas: Run atlas build` / `Run atlas update`. */
+/** `RepoSpine: Run repospine build` / `Run repospine update`. */
 export async function runCli(ctx: CommandContext, action: AtlasCliAction): Promise<void> {
   const { client, host, runner, statusBar, refreshAll } = ctx;
   statusBar?.indexing();
-  void host.window.showInformationMessage(`Running: atlas ${action} …`);
+  void host.window.showInformationMessage(`Running: repospine ${action} …`);
   try {
     const result = await runner.run(action);
     if (!result.ok) {
       client.lastBuildError = result.summary;
       refreshAll();
       statusBar?.render(client);
-      void host.window.showErrorMessage(`atlas ${action} failed — ${result.summary}`);
+      void host.window.showErrorMessage(`repospine ${action} failed — ${result.summary}`);
       return;
     }
     client.lastBuildError = null;
     refreshAll();
     statusBar?.render(client);
     void host.window.showInformationMessage(
-      result.summary === "" ? `atlas ${action} succeeded` : result.summary,
+      result.summary === "" ? `repospine ${action} succeeded` : result.summary,
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     client.lastBuildError = message;
     refreshAll();
     statusBar?.render(client);
-    void host.window.showErrorMessage(`atlas ${action} failed — ${message}`);
+    void host.window.showErrorMessage(`repospine ${action} failed — ${message}`);
   } finally {
     statusBar?.render(client);
   }
 }
 
-/** `CodeAtlas: Refresh` — re-read the index and redraw the trees. */
+/** `RepoSpine: Refresh` — re-read the index and redraw the trees. */
 export async function refresh(ctx: CommandContext): Promise<void> {
   const { client, host, refreshAll } = ctx;
   refreshAll();
   if (!client.isAvailable) {
     await host.window.showInformationMessage(
-      "CodeAtlas refreshed. Still no index — run CodeAtlas: Build.",
+      "RepoSpine refreshed. Still no index — run RepoSpine: Build.",
     );
     return;
   }
   client.lastBuildError = null;
   const status = client.status();
   await host.window.showInformationMessage(
-    `CodeAtlas refreshed: ${status.filesIndexed} files, ${status.symbolsIndexed} symbols.`,
+    `RepoSpine refreshed: ${status.filesIndexed} files, ${status.symbolsIndexed} symbols.`,
   );
 }
 
@@ -240,7 +240,7 @@ export async function openFile(ctx: CommandContext, target: CodeAtlasTarget): Pr
     await ctx.host.window.showTextDocument(target.filePath, target.line);
   } catch (error) {
     if (isUnavailable(error)) {
-      await ctx.host.window.showErrorMessage(`No CodeAtlas index: ${target.filePath}`);
+      await ctx.host.window.showErrorMessage(`No RepoSpine index: ${target.filePath}`);
     } else {
       throw error;
     }

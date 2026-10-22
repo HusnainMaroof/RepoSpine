@@ -44,7 +44,7 @@ describe("checkForUpdate", () => {
     await checkForUpdate("0.4.0-beta.0");
 
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("0.4.0-beta.0 → 1.0.0"));
-    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("npm install -g codeatlas-cli"));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("npm install -g repospine-cli"));
   });
 
   it("does not print when current version is up to date", async () => {

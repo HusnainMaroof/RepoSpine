@@ -19,16 +19,20 @@ export interface CreateCliOptions
     SearchCommandOptions,
     Pick<IndexingCommandOptions, "prompt"> {}
 
-/** Build and configure the `atlas` CLI program (no side effects). */
+/** Build and configure the `repospine` CLI program (no side effects).
+ *
+ * `atlas` remains an accepted executable alias for existing installations.
+ */
 export function createCli(options: CreateCliOptions = {}): Command {
   const program = new Command();
 
   program
-    .name("atlas")
-    .description("CodeAtlas — an open-source AI context engine for coding agents")
+    .name("repospine")
+    .alias("atlas")
+    .description("RepoSpine — the code-intelligence backbone for AI coding agents")
     .version(pkg.version)
     .action(() => {
-      // Bare `atlas` prints help; the interactive TUI is a v2 follow-up.
+      // Bare `repospine` prints help; the interactive TUI is a v2 follow-up.
       program.outputHelp();
     });
 

@@ -14,14 +14,14 @@ export function statusBarModel(client: ContextClient): StatusBarModel {
   if (!status.available) {
     if (client.lastBuildError !== null) {
       return {
-        text: "CodeAtlas: build failed",
+        text: "RepoSpine: build failed",
         tooltip: client.lastBuildError,
         command: "codeatlas.runBuild",
       };
     }
     return {
-      text: "CodeAtlas: no index",
-      tooltip: "Run CodeAtlas: Build a project index to get started.",
+      text: "RepoSpine: no index",
+      tooltip: "Run RepoSpine: Build a project index to get started.",
       command: "codeatlas.runBuild",
     };
   }
@@ -29,7 +29,7 @@ export function statusBarModel(client: ContextClient): StatusBarModel {
   const symbols = status.symbolsIndexed;
   const updated = status.lastUpdated === "" ? "never" : status.lastUpdated;
   return {
-    text: `CodeAtlas: ${files} files · ${symbols} symbols`,
+    text: `RepoSpine: ${files} files · ${symbols} symbols`,
     tooltip: `${status.repositoryPath}\nLast updated: ${updated}`,
     command: "codeatlas.openOverview",
   };
@@ -48,8 +48,8 @@ export class StatusBarController {
   }
 
   public indexing(): void {
-    this.item.text = "CodeAtlas: indexing…";
-    this.item.tooltip = "Atlas is building the index…";
+    this.item.text = "RepoSpine: indexing…";
+    this.item.tooltip = "RepoSpine is building the index…";
     this.item.command = "codeatlas.runBuild";
     this.item.show();
   }

@@ -1,9 +1,12 @@
-# CodeAtlas
+# RepoSpine
 
-> An open-source **AI Context Engine** that helps AI tools and agents understand
-> any codebase — accurately, cheaply, and locally.
+> The code-intelligence backbone for AI coding agents.
 
-CodeAtlas scans, parses, and indexes a source tree into a queryable, persistent
+CodeAtlas is now **RepoSpine**. The `atlas` command, `.codeatlas/` project data,
+MCP identifiers, and existing workspace integrations remain supported during the
+migration. New installations should use `repospine`.
+
+RepoSpine scans, parses, and indexes a source tree into a queryable, persistent
 context database, exposes that context to developer tools and AI agents over a
 stable SDK (CLI, MCP, VS Code), and manages the **Tools** and **Skills** those
 agents work with.
@@ -12,7 +15,7 @@ agents work with.
 Repository → scan → hash → parse → graph → context.db → Context SDK → CLI · MCP · VS Code · agents
 ```
 
-## Why CodeAtlas
+## Why RepoSpine
 
 LLMs work best with *relevant, fresh context*, not whole repositories:
 
@@ -53,7 +56,7 @@ LLMs work best with *relevant, fresh context*, not whole repositories:
   per-tool manifest, a compatibility engine, a security/trust assessor, an
   approval-gated installer, and a configurator for installed agents.
 - **Setup you control** — `atlas setup` shows what could be installed and
-  installs **only** what you select. Installing CodeAtlas itself never installs
+  installs **only** what you select. Installing RepoSpine itself never installs
   optional Tools or Skills.
 - **Agent infrastructure** — AI CLI connection layer, agent sessions
   (`atlas sessions`), usage & credits (`atlas usage`), and context → agent
@@ -67,15 +70,15 @@ Requirements: **Node.js `>=22.5.0`** (the storage layer uses the built-in
 `node:sqlite`; every package shares that engine floor).
 
 ```bash
-npm install --global codeatlas-cli
-atlas --version
+npm install --global repospine-cli
+repospine --version
 ```
 
-This installs **CodeAtlas only** — no Tools, no Skills, no config changes. Then
+This installs **RepoSpine only** — no Tools, no Skills, no config changes. Then
 choose what you want:
 
 ```bash
-atlas setup
+repospine setup
 ```
 
 Or build from source:
@@ -83,7 +86,7 @@ Or build from source:
 ```bash
 corepack enable
 pnpm install
-pnpm --filter codeatlas-cli build
+pnpm --filter repospine-cli build
 ```
 
 See [docs/guides/installation.md](docs/guides/installation.md).
@@ -103,7 +106,7 @@ Project evidence: frontend markers
 
 Recommended Skills — already available, no install needed:
   ✓ webapp-testing — Test rendered web applications through observable behavior…
-  13 built-in Skills ship with CodeAtlas; see them all with `atlas skills`.
+  13 built-in Skills ship with RepoSpine; see them all with `repospine skills`.
 
 Recommended Tools & Skills — installable (0):
   none — the curated recommendations are built-in Skills
@@ -307,7 +310,7 @@ pnpm install
 pnpm check                                    # typecheck + lint + format + test
 pnpm test                                     # unit/integration tests
 npx vitest run packages/toolkit apps/cli       # targeted tests
-pnpm --filter codeatlas-cli build              # build the CLI (copies Skills)
+pnpm --filter repospine-cli build              # build the CLI (copies Skills)
 ```
 
 See [docs/contributing/DEVELOPMENT.md](docs/contributing/DEVELOPMENT.md),

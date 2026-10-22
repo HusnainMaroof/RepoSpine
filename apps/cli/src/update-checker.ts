@@ -67,7 +67,7 @@ function compareVersions(current: string, latest: string): number {
 
 async function fetchLatestVersion(): Promise<string | null> {
   return new Promise((resolve) => {
-    execFile("npm", ["view", "codeatlas-cli", "version"], { timeout: 5000 }, (error, stdout) => {
+    execFile("npm", ["view", "repospine-cli", "version"], { timeout: 5000 }, (error, stdout) => {
       if (error) {
         resolve(null);
         return;
@@ -106,5 +106,5 @@ export async function checkForUpdate(currentVersion: string): Promise<void> {
 
 function printNotice(current: string, latest: string): void {
   console.log(`\n  Update available: ${current} → ${latest}`);
-  console.log("  Run `npm install -g codeatlas-cli` to update\n");
+  console.log("  Run `npm install -g repospine-cli` to update\n");
 }

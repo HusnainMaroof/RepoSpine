@@ -1,8 +1,8 @@
 {
   "name": "@prof-bilal/atlas-extension",
-  "displayName": "CodeAtlas",
+  "displayName": "RepoSpine",
   "private": true,
-  "description": "AI context for your codebase, right in the editor. Search symbols, explore dependencies, view summaries, and run atlas build/update.",
+  "description": "Verified repository context for AI coding agents, right in the editor. Search symbols, explore dependencies, view summaries, and run repospine build/update.",
   "version": "0.0.0",
   "publisher": "codeatlas",
   "license": "MIT",
@@ -64,39 +64,39 @@
     "commands": [
       {
         "command": "codeatlas.openOverview",
-        "title": "CodeAtlas: Open Project Overview"
+        "title": "RepoSpine: Open Project Overview"
       },
       {
         "command": "codeatlas.searchSymbols",
-        "title": "CodeAtlas: Search Symbols"
+        "title": "RepoSpine: Search Symbols"
       },
       {
         "command": "codeatlas.searchFiles",
-        "title": "CodeAtlas: Search Files"
+        "title": "RepoSpine: Search Files"
       },
       {
         "command": "codeatlas.showModules",
-        "title": "CodeAtlas: Show Modules"
+        "title": "RepoSpine: Show Modules"
       },
       {
         "command": "codeatlas.showSummaries",
-        "title": "CodeAtlas: Show Summaries"
+        "title": "RepoSpine: Show Summaries"
       },
       {
         "command": "codeatlas.showDependencies",
-        "title": "CodeAtlas: Show Dependency Graph"
+        "title": "RepoSpine: Show Dependency Graph"
       },
       {
         "command": "codeatlas.runBuild",
-        "title": "CodeAtlas: Run atlas build"
+        "title": "RepoSpine: Run repospine build"
       },
       {
         "command": "codeatlas.runUpdate",
-        "title": "CodeAtlas: Run atlas update"
+        "title": "RepoSpine: Run repospine update"
       },
       {
         "command": "codeatlas.refresh",
-        "title": "CodeAtlas: Refresh"
+        "title": "RepoSpine: Refresh"
       }
     ],
     "menus": {
@@ -121,5 +121,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "author": "CodeAtlas contributors"
+  "author": "RepoSpine contributors"
 }

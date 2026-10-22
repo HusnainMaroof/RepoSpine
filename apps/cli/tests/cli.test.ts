@@ -1581,6 +1581,13 @@ describe("atlas CLI", () => {
     expect(program.version()).toBe(pkg.version);
   });
 
+  it("uses RepoSpine as the canonical CLI name and keeps atlas as a compatibility alias", () => {
+    const program = createCli();
+    expect(program.name()).toBe("repospine");
+    expect(program.aliases()).toContain("atlas");
+    expect(program.description()).toContain("RepoSpine");
+  });
+
   it("resolves the project root and the context database path", () => {
     const root = join(tmpdir(), "atlas-project-test");
     process.env["ATLAS_ROOT"] = root;

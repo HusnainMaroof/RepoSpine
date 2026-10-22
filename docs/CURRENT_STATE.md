@@ -1,4 +1,9 @@
-# CodeAtlas — Current State
+# RepoSpine — Current State
+
+> **Brand migration:** CodeAtlas is now branded **RepoSpine**. The `atlas`
+> executable, `.codeatlas/` storage paths, MCP identifiers, and internal
+> `@prof-bilal/atlas-*` package scopes remain compatibility contracts for now;
+> new public CLI/package references use RepoSpine where migration-safe.
 
 > **Read this first.** This document records what *actually* exists in the
 > repository as of **2026-08-12** (re-verified against code), so AI agents do
@@ -17,7 +22,7 @@
 
 | | |
 |---|---|
-| **Name** | CodeAtlas |
+| **Name** | RepoSpine (formerly CodeAtlas) |
 | **Description** | Open-source **AI Context Engine** (+ future Unified AI CLI Orchestrator) |
 | **License** | MIT |
 | **Monorepo** | pnpm workspaces (`pnpm-workspace.yaml`, pnpm `9.15.0`) |
@@ -25,7 +30,7 @@
 | **Language** | TypeScript, strict mode, ESM (`"type": "module"`) |
 | **Package manager** | pnpm |
 | **Git** | **Is a git repository** (branch `main`, remote `github.com/Prof-bilal/CodeAtlas.git`). `.gitignore`, `.husky`, and `commitlint` are configured. |
-| **Published version** | CLI `codeatlas-cli` `0.2.1`; `@prof-bilal/atlas-*` workspace packages `0.0.0` (`@prof-bilal/atlas-shared` `VERSION`) |
+| **Published version** | CLI `repospine-cli` (CodeAtlas compatibility package); `@prof-bilal/atlas-*` workspace packages remain compatibility-scoped |
 
 Verified by full-tree inspection (`packages/*`, `apps/*`, configs) and by reading
 every package's source and tests.

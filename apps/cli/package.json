@@ -1,18 +1,19 @@
 {
-  "name": "codeatlas-cli",
+  "name": "repospine-cli",
   "version": "0.5.2",
-  "description": "CodeAtlas CLI — a local-first AI context engine that scans, parses, and indexes a source tree into a queryable context database for developer tools and AI agents.",
-  "author": "CodeAtlas contributors",
+  "description": "RepoSpine CLI — the local-first code-intelligence backbone for AI coding agents.",
+  "author": "RepoSpine contributors",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Prof-bilal/CodeAtlas.git"
+    "url": "git+https://github.com/Prof-bilal/RepoSpine.git"
   },
-  "homepage": "https://github.com/Prof-bilal/CodeAtlas",
+  "homepage": "https://github.com/Prof-bilal/RepoSpine",
   "bugs": {
-    "url": "https://github.com/Prof-bilal/CodeAtlas/issues"
+    "url": "https://github.com/Prof-bilal/RepoSpine/issues"
   },
   "keywords": [
+    "repospine",
     "codeatlas",
     "ai",
     "context",
@@ -25,6 +26,7 @@
   ],
   "type": "module",
   "bin": {
+    "repospine": "./dist/index.js",
     "atlas": "./dist/index.js"
   },
   "main": "./dist/index.js",

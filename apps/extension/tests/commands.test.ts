@@ -156,7 +156,7 @@ describe("registerCommands", () => {
 
     await invoke(h, "codeatlas.searchSymbols");
     expect(h.records.quickPickItems).toHaveLength(0);
-    expect(h.records.messages.some((message) => message.includes("No CodeAtlas index"))).toBe(true);
+    expect(h.records.messages.some((message) => message.includes("No RepoSpine index"))).toBe(true);
   });
 
   it("quick-picks a symbol and opens its file", async () => {
@@ -207,7 +207,7 @@ describe("runCli status bar lifecycle", () => {
     }
     const runPromise = handler();
 
-    expect(item.text).toBe("CodeAtlas: indexing…");
+    expect(item.text).toBe("RepoSpine: indexing…");
     expect(item.shown).toBe(true);
 
     done();

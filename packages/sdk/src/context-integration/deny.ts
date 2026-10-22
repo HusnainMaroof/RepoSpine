@@ -26,7 +26,7 @@ interface PathDenyPattern {
 
 const PATH_DENY_PATTERNS: readonly PathDenyPattern[] = [
   // `.env`, `.env.local`, `.env.production`, … — never send any `.env*`.
-  { pattern: ".env*", re: /^\.env(?:\.\w+)?$/ },
+  { pattern: ".env*", re: /^\.env/i },
   // Private-key and credential material.
   { pattern: "*.pem", re: /\.pem$/i },
   { pattern: "*.key", re: /\.key$/i },
@@ -35,12 +35,17 @@ const PATH_DENY_PATTERNS: readonly PathDenyPattern[] = [
   { pattern: "id_rsa/id_dsa/id_ed25519", re: /^id_(rsa|dsa|ed25519|ecdsa)$/i },
   {
     pattern: "credentials/secret files",
-    re: /^(credentials|secret|secrets)$/i,
+    re: /^(?:credentials?|secret|secrets)$/i,
   },
   // Whole secret directories (`.ssh`, `.aws`, `.gcloud`).
   { pattern: ".*.ssh/.aws/.gcloud dirs", re: /^\.(ssh|aws|gcloud)$/i },
   // JSON secret bundles (`secrets.json`, `secrets.local.json`, …).
-  { pattern: "secrets*.json", re: /^secrets?(?:[-_.]?\w+)*\.json$/i },
+  { pattern: "secrets/credentials*.json", re: /^(?:secrets?|credentials?)(?:[-_.]?\w+)*\.json$/i },
+];
+
+const PATH_DENY_DIRECTORY_PATTERNS: readonly PathDenyPattern[] = [
+  { pattern: ".ssh/.aws/.gcloud dirs", re: /^\.(ssh|aws|gcloud)$/i },
+  { pattern: "credentials/secret directories", re: /^(credentials?|secret|secrets)$/i },
 ];
 
 /** Content-level patterns: a high-confidence credential match excludes the file. */
@@ -114,6 +119,10 @@ function basename(path: string): string {
   return path.split(/[\\/]/).pop() ?? path;
 }
 
+function pathSegments(path: string): readonly string[] {
+  return path.split(/[\\/]+/).filter((segment) => segment.length > 0);
+}
+
 /**
  * Run the deny-filter over a file. A path-level match short-circuits the
  * content scan (the file is dropped and the reason recorded).
@@ -121,9 +130,17 @@ function basename(path: string): string {
 export function denyFilter(path: string, content: string): DenyFilterResult {
   const pathPatterns: string[] = [];
   const base = basename(path);
+  const directories = pathSegments(path).slice(0, -1);
   for (const entry of PATH_DENY_PATTERNS) {
     if (entry.re.test(base)) {
       pathPatterns.push(entry.pattern);
+    }
+  }
+  for (const directory of directories) {
+    for (const entry of PATH_DENY_DIRECTORY_PATTERNS) {
+      if (entry.re.test(directory)) {
+        pathPatterns.push(entry.pattern);
+      }
     }
   }
   if (pathPatterns.length > 0) {

@@ -1,6 +1,6 @@
 {
   "name": "@prof-bilal/atlas-sdk",
-  "version": "0.5.2",
+  "version": "0.7.0-beta.1",
   "description": "Public programmatic API and composition root for CodeAtlas.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -16,14 +16,14 @@
   "files": ["dist"],
   "sideEffects": false,
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && node ../../scripts/copy-prebuilt-skills.mjs dist/skills/prebuilt",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "lint": "eslint .",
     "format": "biome format --write ."
   },
   "engines": {
-    "node": ">=22.5.0"
+    "node": ">=22.13.0"
   },
   "dependencies": {
     "@prof-bilal/atlas-agents": "workspace:^",
@@ -34,6 +34,7 @@
     "@prof-bilal/atlas-hashing": "workspace:^",
     "@prof-bilal/atlas-metrics": "workspace:^",
     "@prof-bilal/atlas-parser": "workspace:^",
+    "@prof-bilal/atlas-proof": "workspace:^",
     "@prof-bilal/atlas-providers": "workspace:^",
     "@prof-bilal/atlas-scanner": "workspace:^",
     "@prof-bilal/atlas-search": "workspace:^",
@@ -43,7 +44,10 @@
     "@prof-bilal/atlas-toolkit": "workspace:^",
     "@prof-bilal/atlas-usage": "workspace:^",
     "@prof-bilal/atlas-verifier": "workspace:^",
-    "chokidar": "^4.0.0"
+    "chokidar": "^4.0.0",
+    "tree-sitter-wasms": "^0.1.13",
+    "web-tree-sitter": "^0.25.0",
+    "ts-morph": "^28.0.0"
   },
   "license": "MIT",
   "repository": {
@@ -56,7 +60,8 @@
     "url": "https://github.com/Prof-bilal/CodeAtlas/issues"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "tag": "beta"
   },
   "author": "CodeAtlas contributors"
 }

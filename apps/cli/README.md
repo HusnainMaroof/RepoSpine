@@ -8,7 +8,7 @@ This is a thin, dumb layer: it parses arguments and delegates to the
 
 ## Install
 
-Requires Node.js `>=22.5.0` (the storage layer uses the built-in `node:sqlite`).
+Requires Node.js `>=22.13.0` (the storage layer uses the built-in `node:sqlite`).
 
 ```bash
 npm install --global codeatlas-cli

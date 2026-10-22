@@ -19,6 +19,12 @@ together) and [REPOSITORY_MAP.md](./REPOSITORY_MAP.md) (where everything lives).
 
 ## Start here
 
+- [CONTRIBUTOR_READINESS_AUDIT.md](./CONTRIBUTOR_READINESS_AUDIT.md) — current
+  portfolio, contributor, open-source, documentation, testing, CI, and release
+  readiness plan. It is a plan, not a claim that every recommendation has landed.
+- [proof-system/README.md](./proof-system/README.md) — mutation-aware proof audit,
+  experimental kernel, API, implementation phases and evaluation plan.
+
 - [CURRENT_STATE.md](./CURRENT_STATE.md) — what is implemented / partial / planned. **Read first.**
 - [REPOSITORY_MAP.md](./REPOSITORY_MAP.md) — "where do I add this?" map of apps, packages, docs and tests.
 - [FEATURE_STATUS.md](./FEATURE_STATUS.md) — status tags across features.
@@ -42,6 +48,7 @@ together) and [REPOSITORY_MAP.md](./REPOSITORY_MAP.md) (where everything lives).
 - [architecture/AGENT_SESSIONS.md](./architecture/AGENT_SESSIONS.md) — Agent Session Manager
 - [architecture/AGENT_ORCHESTRATOR.md](./architecture/AGENT_ORCHESTRATOR.md) — unified AI CLI orchestrator
 - [architecture/AGENT_CATALOG.md](./architecture/AGENT_CATALOG.md) — implemented analysis agents
+- [architecture/TOKEN_EFFICIENT_MODEL_STRATEGY.md](./architecture/TOKEN_EFFICIENT_MODEL_STRATEGY.md) — **[PLANNED]** context compiler, validation controller, and capability-aware model lanes
 
 ## Guides
 
@@ -83,7 +90,10 @@ together) and [REPOSITORY_MAP.md](./REPOSITORY_MAP.md) (where everything lives).
 
 ## Navigating for a task
 
-- **New to the repo?** `AGENTS.md` → `CURRENT_STATE.md` → `architecture/ARCHITECTURE.md`.
+- **New to the repo?** root `CONTRIBUTING.md` → `CURRENT_STATE.md` →
+  `architecture/ARCHITECTURE.md` → `REPOSITORY_MAP.md`.
+- **Want the shortest orientation?** Read the root `README.md`, then this page
+  and `REPOSITORY_MAP.md` before opening implementation files.
 - **About to modify a module?** Also read `architecture/MODULES.md` + `architecture/DEPENDENCIES.md`.
 - **Touching an indexer/analyzer?** Read `architecture/CONTEXT.md` + `architecture/MODULES.md`.
 - **Touching Skills or Tools?** Read `architecture/AGENT_TOOLKIT.md` + `architecture/TOOL_REGISTRY.md` + `reference/TOOL_MANIFEST.md`.

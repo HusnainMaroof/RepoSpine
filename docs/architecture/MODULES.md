@@ -1,5 +1,25 @@
 # CodeAtlas Modules
 
+## Experimental change proofs
+
+`packages/proof` owns deterministic proof compilation, dependency evaluation,
+invalidation, debt, investigation and action ranking behind core proof ports.
+`packages/storage/src/proof-store.ts` owns independent proof schema/versioning,
+bounded state, immutable compressed history, proof execution leases and advisory
+memory. `packages/sdk/src/proof` owns scanner/hash/context/Git/verifier/watch/
+usage/runtime composition. Core/SDK task contracts carry optional proof linkage.
+CLI and MCP use SDK only. `context.db` remains
+the repository cache; proof state survives its rebuild. See ADR-028 and
+[proof-system index](../proof-system/README.md).
+
+## Experimental control-plane ownership
+
+Core owns WorkPacket/EvidenceRef and lifecycle contracts. SDK context-integration
+owns compilation, policy, observations and verification composition. Agents keep
+SessionPort ownership; verifier keeps command execution; task-ledger.ts owns v2
+continuity without a new store. MCP exposes build_work_packet through SDK only.
+See [CONTROL_PLANE.md](../reference/CONTROL_PLANE.md).
+
 This document defines **ownership**: what each module is responsible for, what
 it must **never** do, and its public surface. It is the source of truth for
 "who owns what." Status tags match [FEATURE_STATUS.md](../FEATURE_STATUS.md).
@@ -67,12 +87,13 @@ Responsible for change detection.
 - Must **NOT**: decide *what* files to process (that's the caller's job), or
   perform parsing.
 
-### Parser — « `@prof-bilal/atlas-parser` » — **[IMPLEMENTED — TypeScript only]**
+### Parser — « `@prof-bilal/atlas-parser` » — **[PARTIAL]**
 Responsible for source-code parsing.
 
 - Owns: `LanguageParser` interface + `ParserRegistry` (plugin seam),
-  `TypeScriptParser` (ts-morph → normalized `Symbol`s), `ParsedFile`,
-  reference extraction.
+  `TypeScriptParser` (ts-morph → normalized `Symbol`s), tree-sitter parsers for
+  Python/Go/Java/C#/Rust, `ParsedFile`, and reference extraction. Grammar
+  loading is lazy; a missing grammar degrades to a skipped language.
 - Must **NOT**: build the dependency graph (that's `graph`'s job), summarise
   with AI, or know about storage.
 

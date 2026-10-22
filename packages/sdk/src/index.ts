@@ -1,4 +1,44 @@
 export { VERSION } from "@prof-bilal/atlas-shared";
+export {
+  createProofSDK,
+  type ProofSDK,
+  type ProofSDKOptions,
+  type ApprovedProofCommand,
+  type ApprovedRuntimeProof,
+} from "./proof";
+export type {
+  BeginChangeInput,
+  ProofPort,
+  ChangeSession,
+  ChangeReceipt,
+  RepositoryRevision,
+  RepositoryArtifact,
+  ProofProposal,
+  ProofReport,
+  ProofLevel,
+  ProofStatus,
+  ProofDebtItem,
+  ProofNode,
+  Evidence,
+  VerificationAction,
+  VerificationResult,
+  Requirement,
+  Constraint,
+  Invariant,
+  Claim,
+  Assumption,
+  Unknown,
+  ProofObligation,
+  ProofSeverity,
+  ProofNodeState,
+  ChangeSessionState,
+  Blindspot,
+  CouplingSignal,
+  TemporalProofGraph,
+  ProofHistoryEntry,
+  InvestigationRule,
+  MutationJustification,
+} from "@prof-bilal/atlas-core";
 export type { FilePath, Result } from "@prof-bilal/atlas-shared";
 export { estimateTokens, fail, ok } from "@prof-bilal/atlas-shared";
 export type {
@@ -543,7 +583,45 @@ export type {
   OutputContractCheck,
 } from "@prof-bilal/atlas-core";
 export { createVerifier, type VerifierServiceDeps } from "./verifier";
-export { loadVerifyConfig, VerifyConfigError } from "@prof-bilal/atlas-verifier";
+export type { WorkPacketContextIntegration } from "./context-integration";
+export {
+  buildWorkPacket,
+  compileWorkPacket,
+  renderWorkPacket,
+  evaluatePacketPolicy,
+} from "./context-integration/work-packet";
+export {
+  createControlPlane,
+  type ControlPlaneOptions,
+  type ControlPlane,
+  type ControlRunInput,
+  type ControlRunResult,
+} from "./context-integration/control-plane";
+export {
+  appendControlEvent,
+  emptyControl,
+  validateControlRecord,
+} from "./context-integration/control-state";
+export type {
+  ContextRequest,
+  EvidenceRef,
+  EvidenceRole,
+  EvidenceRepresentation,
+  WorkPacket,
+  TaskState,
+  TaskEvent,
+  TaskControlRecord,
+  PolicyDecision,
+  ActionRequest,
+  ActionObservation,
+  HandoffState,
+} from "@prof-bilal/atlas-core";
+export {
+  loadVerifyConfig,
+  VerifyConfigError,
+  loadBaseline,
+  saveBaseline,
+} from "@prof-bilal/atlas-verifier";
 export {
   addCustomSkill,
   availableSkills,

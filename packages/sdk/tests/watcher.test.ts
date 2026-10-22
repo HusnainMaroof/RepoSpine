@@ -40,6 +40,7 @@ describe("createWatcher", () => {
       },
     });
     await watcher.start();
+    await watcher.start();
     try {
       await writeFile(file, "export const a = 2;\nexport const b = 3;\n");
       await waitFor(() => results.length > 0);

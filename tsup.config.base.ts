@@ -20,6 +20,7 @@ const workspaceAliases: Record<string, string> = {
   "@prof-bilal/atlas-hashing": resolve(ROOT, "packages/hashing/src/index.ts"),
   "@prof-bilal/atlas-scanner": resolve(ROOT, "packages/scanner/src/index.ts"),
   "@prof-bilal/atlas-parser": resolve(ROOT, "packages/parser/src/index.ts"),
+  "@prof-bilal/atlas-proof": resolve(ROOT, "packages/proof/src/index.ts"),
   "@prof-bilal/atlas-storage": resolve(ROOT, "packages/storage/src/index.ts"),
   "@prof-bilal/atlas-graph": resolve(ROOT, "packages/graph/src/index.ts"),
   "@prof-bilal/atlas-context": resolve(ROOT, "packages/context/src/index.ts"),
@@ -53,7 +54,18 @@ export function atlasConfig(overrides: Partial<Options> = {}): Options {
     // (especially the CLI) do not require unpublished workspace packages at
     // runtime.
     noExternal: Object.keys(workspaceAliases),
-    esbuildOptions: (options) => {
+    esbuildOptions: (options, context) => {
+      // Keep the engine beside its own WASM asset. Bundling its JS relocates
+      // the default asset lookup to our dist directory and silently skips
+      // every non-TS language in installed packages.
+      options.external = [...(options.external ?? []), "web-tree-sitter", "tree-sitter-wasms"];
+      if (context.format === "cjs") {
+        options.define = { ...options.define, "import.meta.url": "__atlasModuleUrl" };
+        options.banner = {
+          ...options.banner,
+          js: `const __atlasModuleUrl = require("node:url").pathToFileURL(__filename).href;\n${options.banner?.js ?? ""}`,
+        };
+      }
       options.alias = {
         ...(options.alias || {}),
         ...workspaceAliases,

@@ -1,7 +1,23 @@
 # CodeAtlas Feature Status
 
+**[EXPERIMENTAL / PARTIAL] Mutation-aware proof system:** `packages/proof` behind
+core proof ports, storage-owned `proof.db`, SDK `createProofSDK`, CLI `atlas prove`,
+and opt-in seven-tool MCP proof profile. Explicit obligations, revision-bound
+evidence, mutation invalidation, debt/receipts and heuristic investigation ranking
+work. Continuous watching, control-plane linkage/gating, compressed temporal
+history, proof execution leases, environment freshness, safe import/rebind,
+opt-in model proposals, exported-syntax constraints, architecture investigation
+rules, linked mutation authorization, capability-based action suggestions and
+deployment-bound runtime predicates are also implemented and tested. This is
+not arbitrary semantic compatibility or a measured improvement in agent quality.
+[Status and limits](proof-system/12-implementation-status.md).
+
+**[EXPERIMENTAL] Local control plane:** SDK WorkPackets, policy/lifecycle control,
+verification feedback, versioned task continuity and read-only MCP packet building.
+Opt-in; legacy remains default. [Contract and limitations](reference/CONTROL_PLANE.md).
+
 Single source of truth for what each feature is — **verified against the code**
-(see [CURRENT_STATE.md](./CURRENT_STATE.md), last audit 2026-08-11).
+(see [CURRENT_STATE.md](./CURRENT_STATE.md), last audit 2026-10-14).
 
 ---
 
@@ -72,7 +88,7 @@ Single source of truth for what each feature is — **verified against the code*
   Python/Go/Java/C#/Rust are parsed via tree-sitter; Java/C#/Go cross-file
   resolution is a source-layout heuristic (unresolved imports are counted).
 - Providers: no streaming; transport errors return `Result` (fixed).
-- Storage: engine `>=22.5.0` — now the shared floor for all packages (node:sqlite).
+- Storage: engine `>=22.13.0` — now the shared floor for all packages (node:sqlite).
 - CLI: `atlas search`, `atlas mcp`, `atlas sessions`, `atlas usage`, all
   `atlas tools` commands, `atlas context`, `atlas explain`, `atlas doctor`,
   `atlas watch`, and `atlas init/build/update` are wired through SDK seams;

@@ -127,7 +127,7 @@ implements `ContextDatabasePort`. Full replace (`saveContext`), merge
 (`updateContext`), targeted deletes (`deleteContext`), full read
 (`loadContext`), and a LIKE-based fallback search (`searchContext`, exact/prefix/
 substring scoring with snippets). SQLite via `node:sqlite`
-(Needs Node `>=22.5.0`), synchronous, migrations versioned in a `Migrations`
+(Needs Node `>=22.13.0`), synchronous, migrations versioned in a `Migrations`
 table, transactions, `.`, WAL for file-backed stores, foreign keys enforced.
 A legacy `StorageService` satisfies the older `StoragePort` over the same store.
 

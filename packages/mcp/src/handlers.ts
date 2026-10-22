@@ -11,6 +11,7 @@ import {
   TaskLedgerValidationError,
   assembleContextPackage,
   availableSkills,
+  buildWorkPacket,
   createSkillService,
   detectStaleness,
   evaluateSufficiency,
@@ -87,6 +88,18 @@ export interface DependencyShape {
 export const HANDLERS: Readonly<
   Record<ToolName, (h: HandlerContext, args: ToolArgs) => Promise<unknown>>
 > = {
+  build_work_packet: async (h, args) => ({
+    nextSteps: ["Inspect deferred source ranges if the supplied evidence is insufficient."],
+    packet: await buildWorkPacket(h.ctx.requireSDK(), {
+      task: requireString(args, "task"),
+      ...(optionalStringArray(args, "scopePaths", 0, 64) === undefined
+        ? {}
+        : { scopePaths: optionalStringArray(args, "scopePaths", 0, 64) ?? [] }),
+      ...(optionalInt(args, "maxTokens", 512, 12000) === undefined
+        ? {}
+        : { maxTokens: optionalInt(args, "maxTokens", 512, 12000) ?? 12000 }),
+    }),
+  }),
   find_relevant_context: findRelevantContext,
   inspect_symbol: inspectSymbol,
   search_symbols: searchSymbols,

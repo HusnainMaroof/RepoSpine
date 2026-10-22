@@ -5,8 +5,35 @@
 > `@prof-bilal/atlas-*` package scopes remain compatibility contracts for now;
 > new public CLI/package references use RepoSpine where migration-safe.
 
+**2026-10-17 beta preparation:** Workspace publishable packages are aligned at
+`0.7.0-beta.1` with beta-only defaults; this is a local candidate, not a published
+release. Shared version metadata now comes from its manifest. Bundled consumers
+retain CommonJS module URLs, declare external tree-sitter WASM runtime packages
+and ship the canonical Skills. The CLI tarball install/smoke gate and Node 22/24
+Linux/macOS CI matrix are defined; actual run evidence and remaining release
+conditions are separate. The local release gate passed 163 files / 1,584 tests;
+the same complete suite passed on Node 22.13.0. Cold tarball proof/MCP smokes passed
+on Node 22.13.0 and 24.22.0. Registry publication and remote CI remain pending.
+See [public beta contract](proof-system/13-public-beta.md).
+
+**2026-10-17 update — [EXPERIMENTAL / PARTIAL]:** Revision-bound change sessions,
+explicit proof obligations, evidence invalidation, proof debt/receipts, conservative
+TS/JS syntax comparison and advisory coupling/history/memory are implemented via
+`createProofSDK`, the separate storage-owned `.codeatlas/proof.db`, `atlas prove`,
+and the opt-in seven-tool MCP proof profile. The follow-through adds continuous
+watching (including Git metadata), durable compressed history, cross-process
+proof execution leases, environment identity, task/control-plane proof gating,
+portable intent rebinding, explicit model proposals through ProviderPort/usage,
+architecture investigation rules, requirement-linked mutation authorization,
+conservative exported-contract checks and deployment-bound runtime predicates.
+All are experimental: semantic equivalence, universal contract compatibility,
+arbitrary editor locking and measured live-agent quality are not established.
+See [implementation status](proof-system/12-implementation-status.md) and ADR-028.
+
+**2026-10-16 update — [EXPERIMENTAL]:** Opt-in SDK WorkPackets, a local control-plane lifecycle through existing SessionPort/VerifierPort, v2 task-ledger events and read-only MCP `build_work_packet` are implemented. Legacy delivery remains default. Scope checks observe external-agent edits after execution; they are not an external-agent sandbox. See [CONTROL_PLANE.md](reference/CONTROL_PLANE.md) and ADR-027.
+
 > **Read this first.** This document records what *actually* exists in the
-> repository as of **2026-08-12** (re-verified against code), so AI agents do
+> repository as of **2026-10-14** (re-verified against code), so AI agents do
 > not mistake planned features for implemented ones. Each section is tagged:
 >
 > - **[IMPLEMENTED]** — production code exists and is tested.
@@ -26,11 +53,11 @@
 | **Description** | Open-source **AI Context Engine** (+ future Unified AI CLI Orchestrator) |
 | **License** | MIT |
 | **Monorepo** | pnpm workspaces (`pnpm-workspace.yaml`, pnpm `9.15.0`) |
-| **Runtime** | Node.js `>=22.5.0` (all packages share the same floor — `node:sqlite`; see §5) |
+| **Runtime** | Node.js `>=22.13.0` (all packages share the same floor — `node:sqlite`; see §5) |
 | **Language** | TypeScript, strict mode, ESM (`"type": "module"`) |
 | **Package manager** | pnpm |
 | **Git** | **Is a git repository** (branch `main`, remote `github.com/Prof-bilal/CodeAtlas.git`). `.gitignore`, `.husky`, and `commitlint` are configured. |
-| **Published version** | CLI `repospine-cli` (CodeAtlas compatibility package); `@prof-bilal/atlas-*` workspace packages remain compatibility-scoped |
+| **Published version** | CLI `repospine-cli` `0.7.0-beta.1` (with `atlas` compatibility alias); workspace package versions are tracked in their individual manifests |
 
 Verified by full-tree inspection (`packages/*`, `apps/*`, configs) and by reading
 every package's source and tests.
@@ -287,10 +314,10 @@ docs/            # (this documentation system)
 
 ### CLI (`apps/cli`) — **[IMPLEMENTED]** (command surface re-verified 2026-09-14)
 
-- Commander.js program `atlas`, **30 top-level commands** — `init`, `build`,
+- Commander.js program `atlas`, **31 top-level commands** — `init`, `build`,
   `update`, `scan`, `search`, `sessions`, `usage`, `metrics`, `explain`,
   `doctor`, `mcp`, `context`, `ask`, `tools`, `skills` (alias `skill`), `setup`,
-  `providers`, `agents`, `ollama`, `warden`, `verify`, `impact`,
+  `providers`, `agents`, `ollama`, `warden`, `verify`, `prove`, `impact`,
   `trace`, `inspect`, `evaluate`, `watch`, and the
   standalone agent launchers `claude`/`gemini`/`codex`/`opencode` (sugar over
   `atlas context launch --provider <agent>`; the future slash router remains
@@ -850,7 +877,7 @@ absent.
 
 ## 5. Cross-cutting facts & known inconsistencies
 
-1. **Engine floor.** All packages and the root require Node `>=22.5.0`
+1. **Engine floor.** All packages and the root require Node `>=22.13.0`
    (`node:sqlite` in `storage`/`usage`). Running on Node <22.5 breaks the
    storage layer and anything that reads the context database.
 2. **Provider default model ids are best-effort current values** — verified

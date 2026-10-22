@@ -15,9 +15,9 @@ the job, extend it instead.
 | `packages/sdk/` | Composition root: every service is wired here and exported | Adding a public API surface (`createContextSDK`, `createToolkitSDK`, `planSetup`, `createSkillService`, …). |
 | `packages/toolkit/` | Agent Toolkit: tool registry (`catalog.json`), tool manifests, installer, configurator, security assessor, **Skills loader + built-in Skills** | Tools (`atlas tools`), and Skills (`skills/prebuilt/<id>/SKILL.md`). |
 | `packages/mcp/` | MCP server (`@prof-bilal/atlas-mcp`) over stdio | Exposing context/Skills to MCP clients. |
-| `packages/*` (feature) | One package per capability: scanner, hashing, parser, storage, graph, context, cache, providers, summary, search, agents, usage, metrics, verifier | Implementing a capability behind a `core` port. |
+| `packages/*` (feature) | One package per capability: scanner, hashing, parser, storage, graph, context, cache, providers, summary, search, agents, usage, metrics, verifier, proof, toolkit | Implementing a capability behind a `core` port. |
 | `docs/` | Documentation (see [`docs/README.md`](./README.md)) | Any behavior/architecture change. |
-| `scripts/` | Build helpers (`copy-prebuilt-skills.mjs`) | Build plumbing only. Not runtime code. |
+| `scripts/` | Build and release helpers (`copy-prebuilt-skills.mjs`, `release-smoke.mjs`) | Build/release plumbing only. Not runtime code. |
 | `tests/fixtures/` | Shared test fixture repositories | Fixtures used by more than one package. |
 | `.github/workflows/` | CI (typecheck, lint, format, tests) | CI changes. |
 
@@ -26,7 +26,7 @@ the job, extend it instead.
 | Directory | Contents |
 | --------- | -------- |
 | `docs/` (root) | `CURRENT_STATE.md` (what exists), `FEATURE_STATUS.md` (status tags), `REPOSITORY_MAP.md` (this file), `README.md` (index). |
-| `docs/architecture/` | `ARCHITECTURE.md`, `MODULES.md`, `DEPENDENCIES.md`, `CONTEXT.md`, `CONTEXT_STORAGE.md`, `TOOL_REGISTRY.md`, `AGENT_TOOLKIT.md`, `AGENT_SESSIONS.md`, `AGENT_ORCHESTRATOR.md`, `AGENT_CATALOG.md`. |
+| `docs/architecture/` | Architecture, module ownership, dependency rules, context pipeline/storage, agent sessions/orchestration, toolkit, and catalog docs. |
 | `docs/guides/` | Install, first run, configuration, integrations, providers, AI workflow, VS Code, agent compatibility, troubleshooting. |
 | `docs/reference/` | `CLI.md`, `CONTEXT_SDK.md`, `MCP.md`, `MCP_MIGRATION.md`, `USAGE.md`, `TOOL_MANIFEST.md`, `SECURITY.md`, `PRIVACY.md`. |
 | `docs/contributing/` | `CONTRIBUTING.md`, `DEVELOPMENT.md`, `DEVELOPMENT_WORKFLOW.md`, `TESTING.md`, `CODE_QUALITY.md`, `CHANGE_POLICY.md`. |
@@ -34,6 +34,14 @@ the job, extend it instead.
 | `docs/archive/` | Superseded plans/audits/research. Historical only — never current requirements. |
 
 ## Where do I add…?
+
+### Change proofs
+
+Proof contracts/ports live in core; deterministic rules in `packages/proof`;
+SQLite persistence in `packages/storage/src/proof-store.ts` (separate `proof.db`);
+composition in `packages/sdk/src/proof`. CLI/MCP consume only the SDK. The existing
+context database and symbol graph retain repository-intelligence ownership.
+See [proof-system/README.md](proof-system/README.md).
 
 ### A Skill
 

@@ -31,6 +31,7 @@
       "@prof-bilal/atlas-hashing": ["./packages/hashing/src/index.ts"],
       "@prof-bilal/atlas-scanner": ["./packages/scanner/src/index.ts"],
       "@prof-bilal/atlas-parser": ["./packages/parser/src/index.ts"],
+      "@prof-bilal/atlas-proof": ["./packages/proof/src/index.ts"],
       "@prof-bilal/atlas-storage": ["./packages/storage/src/index.ts"],
       "@prof-bilal/atlas-graph": ["./packages/graph/src/index.ts"],
       "@prof-bilal/atlas-context": ["./packages/context/src/index.ts"],

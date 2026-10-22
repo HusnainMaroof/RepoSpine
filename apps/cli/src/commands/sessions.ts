@@ -7,6 +7,8 @@ import {
   createContextSDK,
   createSessionManager,
   createUsageService,
+  listTaskLedgers,
+  loadTaskLedger,
 } from "@prof-bilal/atlas-sdk";
 import type { Command } from "commander";
 import { contextDbPath } from "./search";
@@ -194,11 +196,61 @@ export function registerSessions(program: Command, options: SessionsCommandOptio
 }
 
 async function listSessions(manager: SessionPort): Promise<void> {
-  console.log(renderSessionsTable(manager.listSessions()));
+  const sessions = [...manager.listSessions()];
+  const known = new Set(sessions.map((session) => session.id));
+  const root = process.env["ATLAS_ROOT"] ?? process.cwd();
+  for (const task of await listTaskLedgers(root)) {
+    const ledger = await loadTaskLedger(root, task.id);
+    if (ledger === null) continue;
+    for (const record of ledger.sessions) {
+      if (known.has(record.sessionId)) continue;
+      sessions.push({
+        id: record.sessionId,
+        agentId: record.provider as Session["agentId"],
+        provider: record.provider,
+        repositoryPath: ledger.repositoryPath,
+        status: record.status as Session["status"],
+        processId: undefined,
+        startedAt: record.startedAt,
+        endedAt: record.endedAt,
+        exitCode: undefined,
+        error: undefined,
+        model: record.model ?? undefined,
+        tokenUsage: undefined,
+      });
+    }
+  }
+  console.log(renderSessionsTable(sessions));
 }
 
 async function showSession(manager: SessionPort, sessionId: string): Promise<void> {
-  const session = manager.getSession(sessionId);
+  let session = manager.getSession(sessionId);
+  if (session === undefined) {
+    const root = process.env["ATLAS_ROOT"] ?? process.cwd();
+    const task = await listTaskLedgers(root);
+    for (const summary of task) {
+      const ledger = await loadTaskLedger(root, summary.id);
+      if (ledger === null) continue;
+      const record = ledger.sessions.find((entry) => entry.sessionId === sessionId);
+      if (record !== undefined) {
+        session = {
+          id: record.sessionId,
+          agentId: record.provider as Session["agentId"],
+          provider: record.provider,
+          repositoryPath: ledger.repositoryPath,
+          status: record.status as Session["status"],
+          processId: undefined,
+          startedAt: record.startedAt,
+          endedAt: record.endedAt,
+          exitCode: undefined,
+          error: undefined,
+          model: record.model ?? undefined,
+          tokenUsage: undefined,
+        };
+        break;
+      }
+    }
+  }
   if (session === undefined) {
     console.error(`Session not found: ${sessionId}`);
     process.exitCode = 1;

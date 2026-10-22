@@ -1,5 +1,17 @@
 # CodeAtlas CLI
 
+## Experimental change proofs
+
+`atlas prove begin --input change.json` creates a revision-aware change session.
+`atlas prove check/status/verify <changeId>` observes or verifies it; verify needs
+`--node <nodeId>`. `--approve-commands` explicitly permits configured build/test
+categories for that invocation. `atlas prove <changeId>` emits a receipt and
+exits 1 unless proven. `understand --input proposals.json` revises proposals;
+`export <changeId>` exports portable state, `import --input exported.json` safely
+rebinds intent without trusting old proof, `authorize --input justifications.json`
+links edits to intent nodes, `history <changeId>` reads immutable versions and
+`watch` continuously invalidates proof. See [proof API](../proof-system/08-mcp-api.md).
+
 The command-line contract for the `atlas` binary.
 
 > **Status:** the command *surface* exists. **`atlas search` is wired to the
@@ -53,7 +65,7 @@ Options take precedence over environment/config where they overlap.
 | `atlas metrics export` | **[implemented]** | Export metrics to a file: `-o/--output <path>` (default `codeatlas-metrics.json`), `--csv` for daily-history CSV (default `codeatlas-metrics.csv`). |
 | `atlas metrics reset` | **[implemented]** | Clear all metrics; requires `--yes` to confirm. |
 | `atlas explain <target>` | **[implemented]** | Explain a symbol, file, module, or concept from the index. Deterministic first: a file path resolves to its content + stored summary + dependencies; a module path to `modules.explain`; a symbol name to `getSymbol` + `findReferences` + dependencies; anything else to `getRelevantContext`. `--ai` generates a fresh AI summary (file/module only) via `summaries.generateFile`/`generateModule` — explicit opt-in, fails cleanly without a configured provider. Options `--repo <path>`, `--json`, `--ai`. Exit `1` when no index exists. |
-| `atlas doctor` | **[implemented]** | Diagnose installation & project health. Checks: Node runtime `>=22.5.0` (for `node:sqlite`), context index (`createContextSDK.status` + `freshness` + `.codeatlas/manifest.json`), AI agents (`createAgentService.detectAll`), agent MCP registration (`createAgentMcpService.status`), provider sanity + Ollama status (**never prints keys**). PASS/WARN/FAIL output; exit `1` on any FAIL. Options `--repo <path>`, `--json`. |
+| `atlas doctor` | **[implemented]** | Diagnose installation & project health. Checks: Node runtime `>=22.13.0` (for `node:sqlite`), context index (`createContextSDK.status` + `freshness` + `.codeatlas/manifest.json`), AI agents (`createAgentService.detectAll`), agent MCP registration (`createAgentMcpService.status`), provider sanity + Ollama status (**never prints keys**). PASS/WARN/FAIL output; exit `1` on any FAIL. Options `--repo <path>`, `--json`. |
 | `atlas impact <paths...>` | **[implemented]** | Compute the blast radius of changed files: BFS over reverse dependencies (`dependencies.getDependents`), tagging affected tests/docs, with a deterministic risk level (low/medium/high by fan-out ratio). Options: `--max-depth <n>` (0 = unlimited), `--no-tests`, `--no-docs`, `--json`. `--breaking` is accepted but reports that the snapshot diff is a P1 feature. Exit `1` when no index exists or risk is `high`. |
 | `atlas trace [stacktrace]` | **[implemented]** | Parse a stack trace (argument, `--file <path>`, or stdin) and ground its `at`-frames against the index, resolving each frame's file to an indexed path. Options: `--file <path>`, `--repo <path>`, `--max-frames <n>` (default 20), `--json`. Exit `1` when no index exists. |
 | `atlas verify [task]` | **[implemented]** | Run claim checks (cited files/symbols must exist in the index, plan-target coverage) and configured verification commands (`.codeatlas/verify.json` or `--config <path>`; pre-existing failures flagged, not counted against the answer). Options: `--paths`, `--symbols`, `--plan-targets` (comma-separated), `--refresh-baseline`, `--json`, `--docs` (documentation-drift check: exported symbols vs `docs/` mentions). Exit `1` on a `fail` verdict or missing index. |

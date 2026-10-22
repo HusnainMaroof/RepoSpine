@@ -1,5 +1,5 @@
-import chokidar from "chokidar";
 import type { Result } from "@prof-bilal/atlas-shared";
+import chokidar from "chokidar";
 import { type IndexResult, indexProject } from "../indexing/indexer";
 
 /** Options for {@link createWatcher}. */
@@ -11,9 +11,13 @@ export interface WatcherOptions {
   /** Directory names never watched (default `.git`, `.codeatlas`, build dirs). */
   readonly ignoredDirs?: readonly string[];
   /** Called after each incremental re-index (success or failure). */
-  readonly onIndex?: (result: Result<IndexResult>) => void;
+  readonly onIndex?: (result: Result<IndexResult>) => void | Promise<void>;
   /** Called on watcher/index errors. */
   readonly onError?: (error: Error) => void;
+  /** Composition hook for a caller-owned execution lease; default remains the SDK indexer. */
+  readonly runIndex?: () => Promise<Result<IndexResult>>;
+  /** Narrow extra metadata paths (e.g. this checkout's Git HEAD/refs). */
+  readonly additionalPaths?: readonly string[];
 }
 
 /** A running repository watcher. */
@@ -41,12 +45,27 @@ export function createWatcher(options: WatcherOptions): Watcher {
   let running = false;
   let pending = false;
   let closed = false;
+  let completion: Promise<void> | undefined;
 
-  const fsWatcher = chokidar.watch(options.repositoryPath, {
+  const additionalPaths = options.additionalPaths ?? [];
+  const fsWatcher = chokidar.watch([options.repositoryPath, ...additionalPaths], {
     ignoreInitial: true,
-    ignored: (path: string) =>
-      ignoredDirs.some((dir) => path.includes(`/${dir}/`) || path.endsWith(`/${dir}`)),
+    ignored: (path: string) => {
+      if (
+        additionalPaths.some(
+          (extra) => path === extra || path.startsWith(`${extra}/`) || extra.startsWith(`${path}/`),
+        )
+      )
+        return false;
+      return ignoredDirs.some((dir) => path.includes(`/${dir}/`) || path.endsWith(`/${dir}`));
+    },
   });
+  const ready = new Promise<void>((resolve, reject) => {
+    fsWatcher.once("ready", resolve);
+    fsWatcher.once("error", reject);
+  });
+  // The error callback still reports initialization errors even if start is never awaited.
+  void ready.catch(() => {});
 
   const runIndex = async (): Promise<void> => {
     if (closed) {
@@ -54,12 +73,14 @@ export function createWatcher(options: WatcherOptions): Watcher {
     }
     if (running) {
       pending = true;
+      await completion;
       return;
     }
     running = true;
     try {
-      const result = await indexProject({ repositoryPath: options.repositoryPath, mode: "update" });
-      options.onIndex?.(result);
+      const result = await (options.runIndex?.() ??
+        indexProject({ repositoryPath: options.repositoryPath, mode: "update" }));
+      await options.onIndex?.(result);
     } catch (error) {
       options.onError?.(error instanceof Error ? error : new Error(String(error)));
     } finally {
@@ -72,12 +93,13 @@ export function createWatcher(options: WatcherOptions): Watcher {
   };
 
   const schedule = (): void => {
+    if (closed) return;
     if (timer !== undefined) {
       clearTimeout(timer);
     }
     timer = setTimeout(() => {
       timer = undefined;
-      void runIndex();
+      completion = runIndex();
     }, debounceMs);
   };
 
@@ -87,17 +109,18 @@ export function createWatcher(options: WatcherOptions): Watcher {
   });
 
   return {
-    start: () =>
-      new Promise<void>((resolve) => {
-        fsWatcher.once("ready", () => resolve());
-      }),
+    start: () => ready,
     close: async () => {
       closed = true;
       if (timer !== undefined) {
         clearTimeout(timer);
       }
       await fsWatcher.close();
+      await completion;
     },
-    trigger: runIndex,
+    trigger: () => {
+      completion = runIndex();
+      return completion;
+    },
   };
 }

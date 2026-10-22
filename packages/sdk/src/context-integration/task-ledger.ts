@@ -8,10 +8,24 @@
 
 import { randomBytes } from "node:crypto";
 import { existsSync } from "node:fs";
-import { mkdir, readFile, readdir, stat, writeFile } from "node:fs/promises";
-import { join, relative, resolve } from "node:path";
-import type { HashSnapshot } from "@prof-bilal/atlas-core";
+import {
+  lstat,
+  mkdir,
+  readFile,
+  readdir,
+  realpath,
+  rename,
+  stat,
+  unlink,
+  writeFile,
+} from "node:fs/promises";
+import { isAbsolute, join, relative, resolve } from "node:path";
+import type { HashSnapshot, TaskControlRecord } from "@prof-bilal/atlas-core";
 import { buildSnapshot, compareHashes } from "@prof-bilal/atlas-hashing";
+import type { FilePath } from "@prof-bilal/atlas-shared";
+import { scanProjectOverview } from "../indexing/scan";
+import { validateControlRecord } from "./control-state";
+import { denyFilter } from "./deny";
 import { TaskLedgerNotFoundError, TaskLedgerValidationError } from "./errors";
 
 /** Sub-directory of `.codeatlas/` holding task ledgers. */
@@ -64,6 +78,8 @@ export interface TaskProgress {
 
 /** Durable task that can span many provider sessions. */
 export interface TaskLedger {
+  readonly changeId?: string;
+  readonly control?: TaskControlRecord;
   readonly id: string;
   readonly schemaVersion: number;
   readonly task: string;
@@ -143,6 +159,33 @@ export function emptyProgress(): TaskProgress {
 /** Persist a ledger as `<id>.json`. */
 export async function saveTaskLedger(repositoryPath: string, ledger: TaskLedger): Promise<string> {
   const path = contextTaskPath(repositoryPath, ledger.id);
+  if (ledger.schemaVersion === 2) {
+    validateTaskLedger(ledger);
+    const body = `${JSON.stringify(ledger, null, 2)}\n`;
+    if (Buffer.byteLength(body) > MAX_TASK_FILE_BYTES)
+      throw new TaskLedgerValidationError("Task exceeds its persisted size bound.");
+    const canonicalRoot = await realpath(repositoryPath);
+    const atlas = join(repositoryPath, ".codeatlas");
+    await mkdir(atlas, { recursive: true });
+    if (relative(canonicalRoot, await realpath(atlas)) !== ".codeatlas")
+      throw new TaskLedgerValidationError("Unsafe task directory.");
+    const dir = contextTasksDir(repositoryPath);
+    await mkdir(dir, { recursive: true });
+    if (
+      relative(canonicalRoot, await realpath(dir))
+        .split("\\")
+        .join("/") !== ".codeatlas/tasks"
+    )
+      throw new TaskLedgerValidationError("Unsafe task directory.");
+    const temporary = join(dir, `${ledger.id}.${randomBytes(8).toString("hex")}.tmp`);
+    try {
+      await writeFile(temporary, body, { encoding: "utf8", flag: "wx", mode: 0o600 });
+      await rename(temporary, path);
+    } finally {
+      await unlink(temporary).catch(() => undefined);
+    }
+    return path;
+  }
   await mkdir(contextTasksDir(repositoryPath), { recursive: true });
   await writeFile(path, `${JSON.stringify(ledger, null, 2)}\n`, "utf8");
   return path;
@@ -161,6 +204,8 @@ export async function loadTaskLedger(
   if (!existsSync(jsonPath)) {
     return null;
   }
+  if ((await lstat(jsonPath)).isSymbolicLink())
+    throw new TaskLedgerValidationError("Task files cannot be symlinks.");
   const size = (await stat(jsonPath)).size;
   if (size > MAX_TASK_FILE_BYTES) {
     throw new TaskLedgerValidationError(
@@ -301,6 +346,7 @@ export function boundProgress(progress: TaskProgress): TaskProgress {
 export async function computeFilesTouched(
   repositoryPath: string,
   start: HashSnapshot,
+  includeNewFiles = false,
 ): Promise<{
   readonly filesTouched: readonly string[];
   readonly truncated: boolean;
@@ -314,8 +360,16 @@ export async function computeFilesTouched(
   for (const [path, hash] of Object.entries(previous)) {
     absolutePrevious[resolve(repositoryPath, path)] = hash;
   }
-  const current = await buildSnapshot(Object.keys(absolutePrevious));
-  if (!current.ok || Object.keys(current.value.hashes).length === 0) {
+  let paths = Object.keys(absolutePrevious);
+  if (includeNewFiles) {
+    const scanned = await scanProjectOverview(repositoryPath as FilePath);
+    if (!scanned.ok) return { filesTouched: [], truncated: false, unknown: true };
+    paths = scanned.value.files
+      .map((file) => file.path)
+      .filter((path) => denyFilter(path, "").accepted);
+  }
+  const current = await buildSnapshot(paths);
+  if (!current.ok || (!includeNewFiles && Object.keys(current.value.hashes).length === 0)) {
     return { filesTouched: [], truncated: false, unknown: true };
   }
   const diff = compareHashes({ hashes: absolutePrevious }, current.value);
@@ -358,7 +412,7 @@ export function validateTaskLedger(value: unknown): TaskLedger {
   if (!isRecord(value)) {
     throw new TaskLedgerValidationError("Task ledger root is not an object.");
   }
-  if (value["schemaVersion"] !== TASK_LEDGER_SCHEMA_VERSION) {
+  if (value["schemaVersion"] !== TASK_LEDGER_SCHEMA_VERSION && value["schemaVersion"] !== 2) {
     throw new TaskLedgerValidationError(
       `Unsupported task schema version: ${String(value["schemaVersion"])} ` +
         `(expected ${TASK_LEDGER_SCHEMA_VERSION}).`,
@@ -383,9 +437,22 @@ export function validateTaskLedger(value: unknown): TaskLedger {
     validateSessionRecord(session, id, index),
   );
 
+  let control: TaskControlRecord | undefined;
+  const changeId = value["changeId"];
+  if (changeId !== undefined && (typeof changeId !== "string" || !/^[a-f0-9]{32}$/.test(changeId)))
+    throw new TaskLedgerValidationError("Invalid linked proof change id.");
+  if (value["schemaVersion"] === 2) {
+    try {
+      control = validateControlRecord(value["control"]);
+    } catch {
+      throw new TaskLedgerValidationError("Invalid task control-plane state.");
+    }
+  }
   return {
+    ...(typeof changeId === "string" ? { changeId } : {}),
+    ...(control === undefined ? {} : { control }),
     id,
-    schemaVersion: TASK_LEDGER_SCHEMA_VERSION,
+    schemaVersion: value["schemaVersion"] as number,
     task: value["task"] as string,
     repositoryPath: value["repositoryPath"] as string,
     createdAt: value["createdAt"] as string,
@@ -491,7 +558,14 @@ function validateSnapshot(value: unknown, taskIdValue: string): HashSnapshot {
   }
   const out: Record<string, string> = {};
   for (const key of keys) {
-    if (key.includes("..") || key.includes("\0")) {
+    if (
+      key.includes("..") ||
+      key.includes("\0") ||
+      isAbsolute(key) ||
+      key.includes("\\") ||
+      /^[a-z]:/i.test(key) ||
+      !denyFilter(key, "").accepted
+    ) {
       throw new TaskLedgerValidationError(`Task ${taskIdValue}: unsafe hash path "${key}".`);
     }
     const hash = hashes[key];

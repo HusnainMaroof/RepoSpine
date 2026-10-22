@@ -178,6 +178,21 @@ export function registerSetup(program: Command, services: SetupCommandServices =
       }
 
       if (preselected === undefined || preselected.length === 0) {
+        if (opts.json === true) {
+          console.log(
+            JSON.stringify(
+              {
+                plan: plan.value,
+                selected: [],
+                installed: false,
+                message: "Nothing selected — no Tools or Skills were installed.",
+              },
+              null,
+              2,
+            ),
+          );
+          return;
+        }
         console.log(renderSetupPlan(plan.value));
         console.log(
           [

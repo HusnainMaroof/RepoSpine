@@ -1,0 +1,27 @@
+{
+  "repositoryCommit": "REPLACE_WITH_PINNED_COMMIT",
+  "tasks": [
+    {
+      "id": "cross-module-task",
+      "brief": "REPLACE_WITH_A_6000_TO_10000_TOKEN_REPOSITORY_SCALE_TASK_BRIEF",
+      "scopePaths": ["src", "tests"],
+      "verify": [{ "command": "pnpm", "args": ["test"] }],
+      "goldEvidence": {
+        "paths": ["src/entry.ts", "src/service.ts", "tests/service.test.ts"],
+        "symbols": ["EntryPoint", "Service"],
+        "constraints": ["Preserve the public API", "Add regression coverage"]
+      }
+    },
+    {
+      "id": "architecture-task",
+      "brief": "REPLACE_WITH_A_SECOND_LARGE_MULTI_MODULE_TASK_BRIEF",
+      "scopePaths": ["src", "tests"],
+      "verify": [{ "command": "pnpm", "args": ["test"] }],
+      "goldEvidence": {
+        "paths": ["src/index.ts", "src/config.ts", "tests/index.test.ts"],
+        "symbols": ["createService", "Config"],
+        "constraints": ["Do not break existing callers", "Keep the change scoped"]
+      }
+    }
+  ]
+}

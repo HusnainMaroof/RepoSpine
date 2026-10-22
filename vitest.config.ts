@@ -13,6 +13,7 @@ const atlasAliases: Record<string, string> = {
   "@prof-bilal/atlas-hashing": repoPath("packages/hashing/src/index.ts"),
   "@prof-bilal/atlas-scanner": repoPath("packages/scanner/src/index.ts"),
   "@prof-bilal/atlas-parser": repoPath("packages/parser/src/index.ts"),
+  "@prof-bilal/atlas-proof": repoPath("packages/proof/src/index.ts"),
   "@prof-bilal/atlas-storage": repoPath("packages/storage/src/index.ts"),
   "@prof-bilal/atlas-graph": repoPath("packages/graph/src/index.ts"),
   "@prof-bilal/atlas-context": repoPath("packages/context/src/index.ts"),

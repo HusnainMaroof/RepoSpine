@@ -1,5 +1,22 @@
 # CodeAtlas MCP Server
 
+## Experimental proof profile
+
+`atlas mcp --profile proof` (or standalone `ATLAS_MCP_PROFILE=proof`) exposes
+seven stateful change-proof tools: atlas_begin_change, atlas_understand,
+atlas_context, atlas_check, atlas_status, atlas_verify and atlas_prove. Existing
+context tools/aliases remain the default profile. Approved commands must be
+supplied by the host; model tool arguments cannot submit executable text or
+passing evidence. See [proof API](../proof-system/08-mcp-api.md).
+Proof mode automatically watches source/Git metadata. The same seven tools also
+support portable intent rebinding, bounded history, approved mutation links and
+explicitly approved model proposals when the host supplies ProviderPort/usage.
+
+The experimental read-only `build_work_packet` tool builds a provider-neutral
+task packet with scope, source references, freshness and budget metadata. It
+does not launch sessions, run commands or persist tasks. See
+[CONTROL_PLANE.md](CONTROL_PLANE.md) for inputs and rollout constraints.
+
 Exposes a project's CodeAtlas context to AI coding tools over the **Model
 Context Protocol** (MCP) over stdio. It is the interface between the Context
 Engine (`@prof-bilal/atlas-sdk`) and external agents — Claude Desktop, Cursor, VS Code,
@@ -8,7 +25,7 @@ and any MCP-capable client.
 - Package: `@prof-bilal/atlas-mcp` (`packages/mcp`)
 - Protocol: MCP over stdio (JSON-RPC 2.0), via the official
   `@modelcontextprotocol/sdk`
-- Status: **[IMPLEMENTED]** (2026-08-09) — fourteen tools
+- Status: **[IMPLEMENTED]** context profile — fifteen primary tools, including the experimental WorkPacket builder, plus four compatibility aliases
 
 ## Principles
 
@@ -82,7 +99,7 @@ Every tool call returns one of:
 ## Tool reference
 
 All tools are deterministic reads of the persisted index unless noted. Search
-tools use typo-tolerant fuzzy matching by default. The server exposes **fourteen**
+tools use typo-tolerant fuzzy matching by default. The context profile exposes **fifteen**
 tools plus four **canonical aliases** (Phase 4 compat window):
 `find_relevant_context` ↔ `context_for`, `get_dependencies` ↔
 `dependencies_of`, `project_overview` ↔ `overview`, `read_file_range` ↔

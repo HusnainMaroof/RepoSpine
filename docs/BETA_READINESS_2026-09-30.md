@@ -6,6 +6,24 @@ reproducible defects. A narrowly scoped developer preview should explicitly
 exclude persistent session management and describe the remaining limitations.
 This audit records findings; it does not silently repair or release the product.
 
+## Follow-up implementation status — 14 October 2026
+
+The release blockers identified below were addressed in the working tree:
+
+- context denial now rejects all `.env*` names, credential bundles, and sensitive
+  directory segments;
+- normal CLI startup no longer performs an implicit registry update check;
+- setup's no-selection JSON path emits one valid JSON document;
+- verifier symbol checks use the complete indexed symbol set and
+  `--refresh-baseline` persists a baseline;
+- captured agent launches wait for terminal output, and durable task-ledger
+  sessions are visible to later `atlas sessions` invocations;
+- the MCP SDK and audited production dependency chain are patched.
+
+This addendum does not replace the original audit evidence. A fresh packaged
+CLI smoke test, Node 22 run, and process-boundary validation remain required
+before changing the broad-beta verdict.
+
 Audited revision: `b51a41365164fe731529d4022407591bccd3ed89`.
 Declared CLI version: **0.5.1**. Environment: Linux, Node **24.21.0**, pnpm **9.15.0**.
 The installed npm registry version and dist-tags were not release-verified.

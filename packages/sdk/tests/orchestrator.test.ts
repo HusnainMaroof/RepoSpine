@@ -205,6 +205,9 @@ interface FakeIntegration {
 function createFakeIntegration(): FakeIntegration {
   const buildInputs: FakeIntegration["buildInputs"] = [];
   const port: ContextIntegration = {
+    async buildWorkPacket() {
+      throw new Error("unused in legacy orchestrator tests");
+    },
     async buildPackage(input) {
       buildInputs.push({ task: input.task, scopePaths: input.scopePaths });
       return makeContextPackage(input.task);

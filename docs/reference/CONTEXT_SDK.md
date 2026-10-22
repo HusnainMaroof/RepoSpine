@@ -1,5 +1,9 @@
 # CodeAtlas Context SDK
 
+The SDK additionally exports experimental `buildWorkPacket`, `renderWorkPacket`
+and `createControlPlane` APIs. They compose the existing Context SDK, SessionPort,
+VerifierPort and task ledger. See [CONTROL_PLANE.md](CONTROL_PLANE.md).
+
 Provider-independent, stable programmatic API for reading (and, for the
 indexing pipeline, writing) a project's indexed context. **This is the single
 interface consumers use to access repository context** — CLI, MCP, editors, and

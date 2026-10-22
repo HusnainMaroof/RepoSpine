@@ -7,6 +7,7 @@ import { z } from "zod";
  */
 
 export type ToolName =
+  | "build_work_packet"
   | "find_relevant_context"
   | "inspect_symbol"
   | "search_symbols"
@@ -23,6 +24,7 @@ export type ToolName =
   | "continue_task";
 
 export const TOOL_NAMES: readonly ToolName[] = [
+  "build_work_packet",
   "find_relevant_context",
   "inspect_symbol",
   "search_symbols",
@@ -92,6 +94,12 @@ export const SUMMARY_KINDS = ["file", "folder", "module", "project"] as const;
 
 /** A single tool registration: metadata + zod input and output schemas. */
 export interface RunnableTool {
+  readonly annotations?: {
+    readonly readOnlyHint: boolean;
+    readonly destructiveHint: boolean;
+    readonly idempotentHint: boolean;
+    readonly openWorldHint: boolean;
+  };
   readonly name: string;
   readonly title: string;
   readonly description: string;
@@ -217,6 +225,41 @@ const dependencyShape = {
 };
 
 export const TOOLS: readonly ToolDefinition[] = [
+  {
+    name: "build_work_packet",
+    title: "Build work packet",
+    description:
+      "Build a bounded, provider-neutral task packet with evidence, deferred source references, freshness, budget and verification requirements. Reads indexed context; does not launch an agent, execute verification or write task state.",
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+    inputSchema: {
+      task: z.string().trim().min(1).max(10000),
+      scopePaths: z.array(z.string().min(1).max(1000)).max(64).optional(),
+      maxTokens: z.number().int().min(512).max(12000).optional(),
+    },
+    outputSchema: {
+      nextSteps: z.array(z.string()),
+      packet: z.object({
+        schemaVersion: z.literal(1),
+        id: z.string(),
+        task: z.string(),
+        scopePaths: z.array(z.string()),
+        plan: z.object({}).passthrough(),
+        evidence: z.array(z.object({}).passthrough()),
+        freshness: z.enum(["fresh", "stale", "unknown", "unavailable"]),
+        omissions: z.array(z.string()),
+        verificationRequired: z.boolean(),
+        outputContract: z.string(),
+        budget: z.object({ maxTokens: z.number(), estimatedTokens: z.number() }),
+      }),
+      freshness: freshnessField,
+      timings: timingsField.optional(),
+    },
+  },
   // ── High-level tools ───────────────────────────────────────────────────────
   {
     name: "find_relevant_context",

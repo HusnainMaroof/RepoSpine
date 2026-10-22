@@ -1,10 +1,25 @@
-import { existsSync } from "node:fs";
+import { existsSync, writeFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { hashContent } from "../src/crypto";
 import { SNAPSHOT_VERSION, buildSnapshot, loadSnapshot, saveSnapshot } from "../src/snapshot";
 import { createTempDir, writeFile } from "./helpers";
 
 describe("buildSnapshot", () => {
+  it("distinguishes binary mutations that decode to the same replacement character", async () => {
+    const temp = createTempDir();
+    try {
+      const path = `${temp.dir}/asset.bin`;
+      writeFileSync(path, Buffer.from([0xff]));
+      const first = await buildSnapshot([path], { strict: true });
+      writeFileSync(path, Buffer.from([0xfe]));
+      const second = await buildSnapshot([path], { strict: true });
+      expect(first.ok && second.ok).toBe(true);
+      if (first.ok && second.ok)
+        expect(first.value.hashes[path]).not.toBe(second.value.hashes[path]);
+    } finally {
+      temp.cleanup();
+    }
+  });
   it("hashes every existing file", async () => {
     const temp = createTempDir();
     try {

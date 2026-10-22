@@ -1,4 +1,20 @@
 export * from "./domain/entities";
+export type * from "./domain/proof";
+export type * from "./ports/proof.port";
+export type {
+  ContextRequest,
+  EvidenceRef,
+  EvidenceRole,
+  EvidenceRepresentation,
+  WorkPacket,
+  TaskState,
+  TaskEvent,
+  TaskControlRecord,
+  PolicyDecision,
+  ActionRequest,
+  ActionObservation,
+  HandoffState,
+} from "./domain/control-plane";
 export * from "./domain/hashing";
 export * from "./domain/scan";
 export type { ModuleResolver } from "./domain/module-resolution";

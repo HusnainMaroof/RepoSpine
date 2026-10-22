@@ -1,4 +1,5 @@
 export { ContextStore } from "./context-store";
+export { ProofStore } from "./proof-store";
 export type { ContextStoreOptions } from "./context-store";
 export { MIGRATIONS, runMigrations } from "./migrations";
 export type { Migration } from "./migrations";

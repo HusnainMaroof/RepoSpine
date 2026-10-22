@@ -9,9 +9,32 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            node: 22.13.0
+          - os: ubuntu-latest
+            node: 22
+          - os: ubuntu-latest
+            node: 24
+          - os: macos-latest
+            node: 24
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    env:
+      npm_config_workspace_concurrency: 1
+      VITEST_MAX_FORKS: 2
+      VITEST_MIN_FORKS: 1
+      VITEST_MAX_THREADS: 2
+      VITEST_MIN_THREADS: 1
 
     steps:
       - name: Checkout
@@ -25,7 +48,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ matrix.node }}
           cache: pnpm
 
       - name: Install dependencies
@@ -36,3 +59,6 @@ jobs:
 
       - name: Run checks
         run: pnpm check
+
+      - name: Smoke test installed production tarball
+        run: pnpm release:smoke --online

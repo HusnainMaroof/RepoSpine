@@ -31,14 +31,14 @@ enforced by ESLint (`no-restricted-imports`) — see `docs/architecture/DEPENDEN
 before doing anything. Its companion `docs/FEATURE_STATUS.md` is the feature
 status table. Never assume planned features exist; verify against code.
 
-Non-obvious facts (verified as of 2026-08-14):
+Non-obvious facts (verified as of 2026-10-17):
 
 - `@prof-bilal/atlas-context` (context ranking/assembly) is **implemented** as a
   deterministic rank-and-assemble step (`ContextBuilderService` behind
   `ContextBuilderPort`, ADR-001): it ranks search hits and resolves them to
   source-file `ContextItem`s — no AI. Do not add AI gating or revert it to a
   stub.
-- The CLI has **30** top-level subcommands. `atlas search`, `atlas mcp`,
+- The CLI has **31** top-level subcommands. `atlas search`, `atlas mcp`,
   `atlas sessions`, `atlas usage`, `atlas agents`, `atlas metrics`, the full
   SDK-backed `atlas tools`, `atlas context`, `atlas explain`, `atlas skills`
   (alias `atlas skill`), `atlas setup`, `atlas watch`, and `atlas doctor`
@@ -151,8 +151,8 @@ Non-obvious facts (verified as of 2026-08-14):
   `codeatlas://task/{id}`)
   in addition to tools. Symbol importance is a deterministic PageRank pass
   (`computePageRank`) persisted for the repo map.
-- Storage uses `node:sqlite` (needs Node `>=22.5.0`); **all** packages and the
-  root share this engine floor (`>=22.5.0`).
+- Storage uses unflagged `node:sqlite` (needs Node `>=22.13.0`); **all** packages and the
+  root share this engine floor (`>=22.13.0`).
 - Git metadata is present in the workspace. Husky/commitlint are configured but
   may be inactive in environments that do not install hooks.
 
@@ -307,6 +307,9 @@ secrets.
 Each run works in its own git worktree. Stay inside the files you own;
 if you must touch a file owned by another run, say so before editing.
 
-- check [claude] - (no scope claimed)
-- check [claude] - (no scope claimed)
+- researching [antigravity] - (no scope claimed)
+- research [freebuff] - (no scope claimed)
+- moreresearch [opencode] - (no scope claimed)
+- doresearch [cline] - (no scope claimed)
+- pi [pi] - (no scope claimed)
 <!-- contextgit:end -->

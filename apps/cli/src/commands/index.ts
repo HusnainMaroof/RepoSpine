@@ -10,6 +10,7 @@ import { type IndexingCommandOptions, registerIndexingCommands } from "./indexin
 import { registerInspect } from "./inspect";
 import { registerMcp } from "./mcp";
 import { registerMetrics } from "./metrics";
+import { registerProve } from "./prove";
 import { registerOllama, registerProviders } from "./providers";
 import { registerScan } from "./scan";
 import { type SearchCommandOptions, registerSearch } from "./search";
@@ -65,6 +66,7 @@ export function registerCommands(
   registerDoctor(program, options.doctor === undefined ? {} : { doctor: options.doctor });
   registerMcp(program);
   registerVerify(program);
+  registerProve(program);
   registerWarden(program);
   registerSkills(program);
   registerSetup(program, options.prompt === undefined ? {} : { prompt: options.prompt });

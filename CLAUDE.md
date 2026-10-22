@@ -45,8 +45,8 @@ rules and instruction. Read `AGENTS.md` first; everything there applies here.
 - **Dependency direction is enforced by ESLint** (`no-restricted-imports`).
   Feature packages only import `core` + `shared`; the CLI imports only `sdk` +
   `mcp`; `mcp` and `apps/extension` import only `sdk`. See `docs/architecture/DEPENDENCIES.md`.
-- **Storage uses `node:sqlite`** (Node built-in, needs Node `>=22.5.0`); other
-  packages target `>=20.19.0`.
+- **Storage uses `node:sqlite`** (unflagged Node built-in, needs Node `>=22.13.0`); all
+  packages and the root share the `>=22.13.0` floor.
 - Git metadata is present in the workspace; preserve history and avoid
   destructive git operations.
 

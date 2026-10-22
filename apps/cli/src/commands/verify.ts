@@ -6,6 +6,7 @@ import {
   createContextSDK,
   createVerifier,
   loadVerifyConfig,
+  saveBaseline,
 } from "@prof-bilal/atlas-sdk";
 import type { Command } from "commander";
 import { contextDbPath, resolveProjectRoot } from "./search";
@@ -54,8 +55,8 @@ export function registerVerify(program: Command): void {
             console.log("No docs/ directory found — skipping documentation drift check.");
           } else {
             // Get exported symbols from index
-            const overview = sdk.project.overview("full");
-            const exportedSymbols: string[] = (overview.topSymbols ?? [])
+            const exportedSymbols: string[] = sdk.symbols
+              .listSymbols()
               .filter((s) => s.kind === "export" || s.kind === "function" || s.kind === "class")
               .map((s) => s.name);
 
@@ -104,8 +105,7 @@ export function registerVerify(program: Command): void {
         // Resolve symbols from the context index
         const resolveSymbols = async (): Promise<readonly string[]> => {
           try {
-            const overview = sdk.project.overview("summary");
-            return (overview.topSymbols ?? []).map((s) => s.name);
+            return sdk.symbols.listSymbols().map((s) => s.name);
           } catch {
             return [];
           }
@@ -139,6 +139,12 @@ export function registerVerify(program: Command): void {
           };
         } else {
           config = loadVerifyConfig(cwd) ?? undefined;
+        }
+
+        if (opts.refreshBaseline === true && config !== undefined && config.enabled) {
+          const baselineResults = await verifier.runCommands(config, cwd);
+          const fingerprint = `${cwd}:${existsSync(dbPath) ? "exists" : "missing"}`;
+          saveBaseline(cwd, fingerprint, baselineResults);
         }
 
         // Run verification

@@ -259,6 +259,8 @@ export interface SessionPort {
    * output stays available after the session reaches a terminal state.
    */
   getSessionOutput(sessionId: string): SessionOutput | undefined;
+  /** Wait for a session to reach a terminal state, returning its final snapshot. */
+  waitForSession?(sessionId: string, timeoutMs?: number): Promise<Result<Session>>;
   /** Graceful stop: `RUNNING → STOPPING → STOPPED` (SIGTERM, escalate to SIGKILL). */
   stopSession(sessionId: string): Promise<Result<Session>>;
   /** Force stop: immediate SIGKILL → `STOPPED`. */

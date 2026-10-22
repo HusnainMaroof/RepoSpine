@@ -16,7 +16,7 @@ pnpm --filter codeatlas-cli build
 node apps/cli/dist/index.js --help
 ```
 
-- **Node ≥ 22.5.0** is required (the storage layer uses the built-in
+- **Node ≥ 22.13.0** is required (the storage layer uses the built-in
   `node:sqlite`).
 - `pnpm test` runs the whole vitest suite; `npx vitest run packages/toolkit apps/cli`
   runs a subset. No test needs network access or provider credentials.

@@ -56,7 +56,7 @@ See [implementation status](proof-system/12-implementation-status.md) and ADR-02
 | **Runtime** | Node.js `>=22.13.0` (all packages share the same floor — `node:sqlite`; see §5) |
 | **Language** | TypeScript, strict mode, ESM (`"type": "module"`) |
 | **Package manager** | pnpm |
-| **Git** | **Is a git repository** (branch `main`, remote `github.com/Prof-bilal/CodeAtlas.git`). `.gitignore`, `.husky`, and `commitlint` are configured. |
+| **Git** | **Is a git repository** (branch `main`, remote `github.com/Prof-bilal/RepoSpine.git`). `.gitignore`, `.husky`, and `commitlint` are configured. |
 | **Published version** | CLI `repospine-cli` `0.7.0-beta.1` (with `atlas` compatibility alias); workspace package versions are tracked in their individual manifests |
 
 Verified by full-tree inspection (`packages/*`, `apps/*`, configs) and by reading

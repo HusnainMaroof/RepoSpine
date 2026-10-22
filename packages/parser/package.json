@@ -35,12 +35,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Prof-bilal/CodeAtlas.git",
+    "url": "git+https://github.com/Prof-bilal/RepoSpine.git",
     "directory": "packages/parser"
   },
-  "homepage": "https://github.com/Prof-bilal/CodeAtlas",
+  "homepage": "https://github.com/Prof-bilal/RepoSpine",
   "bugs": {
-    "url": "https://github.com/Prof-bilal/CodeAtlas/issues"
+    "url": "https://github.com/Prof-bilal/RepoSpine/issues"
   },
   "publishConfig": {
     "access": "public",

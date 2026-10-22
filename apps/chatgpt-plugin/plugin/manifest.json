@@ -7,8 +7,8 @@
   "longDescription": "CodeAtlas indexes a JavaScript/TypeScript repository into a structured context database — files, symbols, modules, and dependency edges — and exposes that intelligence to the assistant through a small set of focused tools. Answers come from CodeAtlas's indexed repository intelligence, not from guessing. Use it to understand my codebase, analyze my repository, find where a feature is implemented, understand dependencies, and see what files are affected by a code change.",
   "developer": {
     "name": "CodeAtlas contributors",
-    "url": "https://github.com/Prof-bilal/CodeAtlas",
-    "supportUrl": "https://github.com/Prof-bilal/CodeAtlas/issues",
+    "url": "https://github.com/Prof-bilal/RepoSpine",
+    "supportUrl": "https://github.com/Prof-bilal/RepoSpine/issues",
     "email": "PLACEHOLDER@example.com"
   },
   "logo": "icons/logo.svg",
@@ -24,8 +24,8 @@
     "typescript",
     "javascript"
   ],
-  "repository": "https://github.com/Prof-bilal/CodeAtlas",
-  "homepage": "https://github.com/Prof-bilal/CodeAtlas",
+  "repository": "https://github.com/Prof-bilal/RepoSpine",
+  "homepage": "https://github.com/Prof-bilal/RepoSpine",
   "license": "MIT",
   "privacyPolicy": "plugin/PRIVACY.md",
   "mcp": {

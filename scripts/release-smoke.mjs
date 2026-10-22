@@ -28,7 +28,7 @@ try {
   await mkdir(install);
   await mkdir(repo);
   await writeFile(join(install, "package.json"), JSON.stringify({ private: true }));
-  const tarball = join(parent, `codeatlas-cli-${manifest.version}.tgz`);
+  const tarball = join(parent, `${manifest.name}-${manifest.version}.tgz`);
   console.log(
     process.argv.includes("--online")
       ? "Installing from a cold registry store"
@@ -52,7 +52,7 @@ try {
       maxBuffer: 4 * 1024 * 1024,
     },
   );
-  const entry = resolve(install, "node_modules/codeatlas-cli/dist/index.js");
+  const entry = resolve(install, "node_modules", manifest.name, "dist/index.js");
   console.log("Checking installed CLI, parsers and Skills");
   const cli = async (args, exitCode = 0) => {
     try {

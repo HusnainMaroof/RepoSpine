@@ -13,7 +13,7 @@
       "qs": "6.16.0"
     }
   },
-  "description": "RepoSpine — the code-intelligence backbone for AI coding agents",
+  "description": "RepoSpine — precise repository context for frontier-level results from smaller AI models",
   "author": "RepoSpine contributors",
   "license": "MIT",
   "type": "module",

@@ -1,7 +1,7 @@
 {
   "name": "repospine-cli",
   "version": "0.7.0-beta.1",
-  "description": "RepoSpine CLI — the local-first code-intelligence backbone for AI coding agents.",
+  "description": "RepoSpine CLI — local repository context that helps smaller AI models deliver stronger coding results.",
   "author": "RepoSpine contributors",
   "license": "MIT",
   "repository": {

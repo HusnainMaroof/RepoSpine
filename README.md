@@ -1,15 +1,15 @@
 # RepoSpine
 
-> The code-intelligence backbone for AI coding agents.
+> Better context for smaller AI models.
 
 CodeAtlas is now **RepoSpine**. The `atlas` command, `.codeatlas/` project data,
 MCP identifiers, and existing workspace integrations remain supported during the
 migration. New installations should use `repospine`.
 
 RepoSpine scans, parses, and indexes a source tree into a queryable, persistent
-context database, exposes that context to developer tools and AI agents over a
-stable SDK (CLI, MCP, VS Code), and manages the **Tools** and **Skills** those
-agents work with.
+context database, then delivers precise, structured context to developer tools
+and AI agents over a stable SDK (CLI, MCP, VS Code). The goal is simple:
+help smaller AI models reason about codebases with frontier-level context.
 
 ```text
 Repository → scan → hash → parse → graph → context.db → Context SDK → CLI · MCP · VS Code · agents
@@ -39,6 +39,9 @@ See the [beta guarantees and release checklist](docs/proof-system/13-public-beta
 ## Why RepoSpine
 
 LLMs work best with *relevant, fresh context*, not whole repositories:
+
+- **Model leverage.** Give smaller models the repository context they need to
+  reason further, solve larger tasks, and produce stronger coding results.
 
 - **Bounded.** A budgeted, deny-filtered `ContextPackage` is assembled per task,
   never a wholesale upload.
